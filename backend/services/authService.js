@@ -1,3 +1,4 @@
+const { generateToken } = require("../utils/jwt");
 const bcrypt = require("bcrypt");
 const prisma = require("../prisma/prismaClient");
 
@@ -42,6 +43,45 @@ const register = async (userData) => {
     };
 };
 
+const login = async (userData) => {
+
+    const { email, password } = userData;
+
+    if (!email || !password) {
+        throw new Error("Email and password are required.");
+    }
+
+    const user = await prisma.user.findUnique({
+        where: {
+            email: email
+        }
+    });
+
+    if (!user) {
+        throw new Error("Invalid email or password.");
+    }
+    const isPasswordCorrect = await bcrypt.compare(
+    password,
+    user.password
+);
+
+if (!isPasswordCorrect) {
+    throw new Error("Invalid email or password.");
+}
+const token = generateToken(user);
+
+return {
+    token,
+    user: {
+        id: user.id,
+        name: user.name,
+        email: user.email
+    }
+};
+
+};
+
 module.exports = {
-    register
+    register,
+    login
 };
