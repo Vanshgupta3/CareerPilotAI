@@ -1,0 +1,78 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String      @id @default(cuid())
+  name        String
+  email       String      @unique
+  password    String
+  createdAt   DateTime    @default(now())
+
+  resumes     Resume[]
+  interviews  Interview[]
+}
+
+model Resume {
+  id          String      @id @default(cuid())
+  title       String
+  fileUrl     String
+  uploadedAt  DateTime    @default(now())
+
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+
+  interviews  Interview[]
+}
+
+model Interview {
+  id          String      @id @default(cuid())
+  role        String
+  level       String
+  createdAt   DateTime    @default(now())
+
+  userId      String
+  resumeId    String
+
+  user        User        @relation(fields: [userId], references: [id])
+  resume      Resume      @relation(fields: [resumeId], references: [id])
+
+  questions   Question[]
+  feedback    Feedback?
+}
+
+model Question {
+  id            String      @id @default(cuid())
+  questionText  String
+
+  interviewId   String
+  interview     Interview   @relation(fields: [interviewId], references: [id])
+
+  answers       Answer[]
+}
+
+model Answer {
+  id            String      @id @default(cuid())
+  answerText    String
+  score         Float?
+
+  questionId    String
+  question      Question    @relation(fields: [questionId], references: [id])
+}
+
+model Feedback {
+  id            String      @id @default(cuid())
+  overallScore  Float
+  strengths     String
+  weaknesses    String
+  suggestions   String
+
+  interviewId   String      @unique
+  interview     Interview   @relation(fields: [interviewId], references: [id])
+}
