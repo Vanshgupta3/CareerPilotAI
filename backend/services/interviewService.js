@@ -82,11 +82,27 @@ for (const item of questions) {
 
 }
 
-return questions;
+return interview;
 
+};
+const getInterviewQuestions = async (interviewId) => {
+const interview = await prisma.interview.findUnique({
+    where: {
+        id: interviewId
+    },
+    include: {
+        questions: true
+    }
+});
+if (!interview) {
+    throw new Error("Interview not found.");
+}
+return interview.questions;
 };
 
 
+
 module.exports = {
-    generateQuestions
+    generateQuestions,
+    getInterviewQuestions
 };

@@ -31,7 +31,32 @@ const generateQuestions = async (req, res) => {
     }
 
 };
+const getInterviewQuestions = async (req, res) => {
+
+    try {
+
+        const { id } = req.params;
+
+        const questions =
+            await interviewService.getInterviewQuestions(id);
+
+        res.status(200).json({
+            success: true,
+            questions
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+
+};
 
 module.exports = {
-    generateQuestions
+    generateQuestions,
+    getInterviewQuestions
 };

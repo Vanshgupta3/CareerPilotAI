@@ -12,5 +12,9 @@ router.post(
     authMiddleware,
     interviewController.generateQuestions
 );
-
+router.get(
+    "/:id/questions",
+    authMiddleware,
+    interviewController.getInterviewQuestions
+);
 module.exports = router;
