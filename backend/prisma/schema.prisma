@@ -19,14 +19,16 @@ model User {
   interviews  Interview[]
 }
 
+
 model Resume {
-  id          String      @id @default(cuid())
+  id          String   @id @default(cuid())
   title       String
   fileUrl     String
-  uploadedAt  DateTime    @default(now())
+  content     String?          // <-- NEW
+  uploadedAt  DateTime @default(now())
 
   userId      String
-  user        User        @relation(fields: [userId], references: [id])
+  user        User @relation(fields: [userId], references: [id])
 
   interviews  Interview[]
 }
