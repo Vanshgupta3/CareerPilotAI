@@ -7,6 +7,7 @@ const authMiddleware = require("../middlewares/authMiddleware");
 const interviewController =
 require("../controllers/interviewController");
 
+
 router.post(
     "/generate",
     authMiddleware,
@@ -16,5 +17,10 @@ router.get(
     "/:id/questions",
     authMiddleware,
     interviewController.getInterviewQuestions
+);
+router.post(
+    "/feedback",
+    authMiddleware,
+    interviewController.generateInterviewFeedback
 );
 module.exports = router;

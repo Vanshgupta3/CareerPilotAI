@@ -55,8 +55,35 @@ const getInterviewQuestions = async (req, res) => {
     }
 
 };
+const generateInterviewFeedback = async (req, res) => {
+
+    try {
+
+        const { interviewId } = req.body;
+
+        const feedback =
+            await interviewService.generateInterviewFeedback(
+                interviewId
+            );
+
+        res.status(200).json({
+            success: true,
+            feedback
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+
+};
 
 module.exports = {
     generateQuestions,
-    getInterviewQuestions
+    getInterviewQuestions,
+    generateInterviewFeedback
 };

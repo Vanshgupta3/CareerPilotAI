@@ -99,10 +99,95 @@ if (!interview) {
 }
 return interview.questions;
 };
+const generateInterviewFeedback = async (interviewId) => {
+const interview = await prisma.interview.findUnique({
+
+    where: {
+        id: interviewId
+    },
+
+    include: {
+
+        questions: {
+            include: {
+                answers: true
+            }
+        }
+
+    }
+
+});
+if (!interview) {
+    throw new Error("Interview not found.");
+}
+let interviewSummary = "";
+for (const question of interview.questions) {
+
+    interviewSummary += `
+Question:
+${question.questionText}
+
+Answer:
+${question.answers[0]?.answerText || "No answer submitted."}
+
+Score:
+${question.answers[0]?.score ?? 0}
+
+-------------------------
+`;
+
+}
+const prompt = `
+You are a Senior Technical Interviewer.
+
+Below is the complete interview performance of a candidate.
+
+${interviewSummary}
+
+Based on all the answers, provide:
+
+1. Overall score (0-10)
+2. Overall strengths
+3. Overall weaknesses
+4. Suggestions for improvement
+
+Return ONLY valid JSON.
+
+Example:
+
+{
+    "overallScore": 8,
+    "strengths": "Strong backend development knowledge and good database understanding.",
+    "weaknesses": "Needs improvement in system design and operating systems.",
+    "suggestions": "Practice low-level design, concurrency and networking concepts."
+}
+`;
+const result = await model.generateContent(prompt);
+
+const response = result.response.text();
+
+const cleanedResponse = response
+    .replace(/```json/g, "")
+    .replace(/```/g, "")
+    .trim();
+
+const feedback = JSON.parse(cleanedResponse);
+await prisma.feedback.create({
+    data: {
+        overallScore: feedback.overallScore,
+        strengths: feedback.strengths,
+        weaknesses: feedback.weaknesses,
+        suggestions: feedback.suggestions,
+        interviewId: interview.id
+    }
+});
+return feedback;
+};
 
 
 
 module.exports = {
     generateQuestions,
-    getInterviewQuestions
+    getInterviewQuestions,
+    generateInterviewFeedback
 };
