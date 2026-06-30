@@ -31,6 +31,7 @@ model Resume {
   user        User @relation(fields: [userId], references: [id])
 
   interviews  Interview[]
+  analysis ResumeAnalysis?
 }
 
 model Interview {
@@ -77,4 +78,25 @@ model Feedback {
 
   interviewId   String      @unique
   interview     Interview   @relation(fields: [interviewId], references: [id])
+}
+
+model ResumeAnalysis {
+  id                String   @id @default(cuid())
+
+  atsScore          Float
+  summary           String
+
+  strengths         String
+  weaknesses        String
+  suggestions       String
+
+  skills            Json
+  missingKeywords   Json
+  grammarScore      Float?
+  formatScore       Float?
+
+  createdAt         DateTime @default(now())
+
+  resumeId          String   @unique
+  resume            Resume   @relation(fields: [resumeId], references: [id])
 }

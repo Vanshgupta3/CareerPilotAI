@@ -1,0 +1,17 @@
+const express = require("express");
+
+const router = express.Router();
+
+const authMiddleware =
+require("../middlewares/authMiddleware");
+
+const resumeAnalysisController =
+require("../controllers/resumeAnalysisController");
+
+router.post(
+    "/analyze",
+    authMiddleware,
+    resumeAnalysisController.analyzeResume
+);
+
+module.exports = router;

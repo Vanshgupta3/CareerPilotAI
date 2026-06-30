@@ -9,6 +9,8 @@ const resumeRoutes = require("./routes/resumeRoutes");
 const interviewRoutes =require("./routes/interviewRoutes");
 const answerRoutes = require("./routes/answerRoutes");
 const errorMiddleware =require("./middlewares/errorMiddleware");
+const resumeAnalysisRoutes =
+require("./routes/resumeAnalysisRoutes");
 
 const app = express();
 
@@ -23,6 +25,10 @@ app.use("/api/resume", resumeRoutes);
 app.use("/api/interview", interviewRoutes);
 app.use("/api/answer", answerRoutes);
 app.use(errorMiddleware);
+app.use(
+    "/api/resume-analysis",
+    resumeAnalysisRoutes
+);
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
