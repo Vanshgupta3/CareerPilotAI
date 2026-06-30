@@ -1,30 +1,20 @@
 const resumeService = require("../services/resumeService");
+const asyncHandler = require("../utils/asyncHandler");
 
-const uploadResume = async (req, res) => {
+const uploadResume = asyncHandler(async (req, res) => {
 
-    try {
+    const resume = await resumeService.saveResume(
+        req.file,
+        req.user.id
+    );
 
-        const resume = await resumeService.saveResume(
-            req.file,
-            req.user.id
-        );
+    res.status(201).json({
+        success: true,
+        message: "Resume uploaded successfully.",
+        resume
+    });
 
-        res.status(201).json({
-            success: true,
-            message: "Resume uploaded successfully.",
-            resume
-        });
-
-    } catch (error) {
-
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
-
-    }
-
-};
+});
 
 module.exports = {
     uploadResume

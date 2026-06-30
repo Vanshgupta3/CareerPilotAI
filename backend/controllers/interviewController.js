@@ -1,86 +1,53 @@
 const interviewService = require("../services/interviewService");
+const asyncHandler = require("../utils/asyncHandler");
 
-const generateQuestions = async (req, res) => {
+const generateQuestions = asyncHandler(async (req, res) => {
 
-    try {
+    const { resumeId } = req.body;
 
-        const { resumeId } = req.body;
-
-        if (!resumeId) {
-            return res.status(400).json({
-                success: false,
-                message: "Resume ID is required."
-            });
-        }
-
-        const questions =
-            await interviewService.generateQuestions(resumeId);
-
-        res.status(200).json({
-            success: true,
-            questions
-        });
-
-    } catch (error) {
-
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
-
+    if (!resumeId) {
+        const error = new Error("Resume ID is required.");
+        error.status = 400;
+        throw error;
     }
 
-};
-const getInterviewQuestions = async (req, res) => {
+    const questions =
+        await interviewService.generateQuestions(resumeId);
 
-    try {
+    res.status(200).json({
+        success: true,
+        questions
+    });
 
-        const { id } = req.params;
+});
 
-        const questions =
-            await interviewService.getInterviewQuestions(id);
+const getInterviewQuestions = asyncHandler(async (req, res) => {
 
-        res.status(200).json({
-            success: true,
-            questions
-        });
+    const { id } = req.params;
 
-    } catch (error) {
+    const questions =
+        await interviewService.getInterviewQuestions(id);
 
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+    res.status(200).json({
+        success: true,
+        questions
+    });
 
-    }
+});
 
-};
-const generateInterviewFeedback = async (req, res) => {
+const generateInterviewFeedback = asyncHandler(async (req, res) => {
 
-    try {
+    const { interviewId } = req.body;
 
-        const { interviewId } = req.body;
+    const feedback =
+        await interviewService.generateInterviewFeedback(interviewId);
 
-        const feedback =
-            await interviewService.generateInterviewFeedback(
-                interviewId
-            );
+    res.status(200).json({
+        success: true,
+        feedback
+    });
 
-        res.status(200).json({
-            success: true,
-            feedback
-        });
-
-    } catch (error) {
-
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
-
-    }
-
-};
+});
 
 module.exports = {
     generateQuestions,
