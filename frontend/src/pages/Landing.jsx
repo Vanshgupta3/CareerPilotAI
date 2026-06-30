@@ -1,18 +1,23 @@
+import Hero from "../components/landing/Hero";
+import Features from "../components/landing/Features";
+import CTA from "../components/landing/CTA";
+
 import Navbar from "../components/common/Navbar";
-import Hero from "../components/common/Hero";
-import Features from "../components/common/Features";
-import CTA from "../components/common/CTA";
 import Footer from "../components/common/Footer";
+import WhyChoose from "../components/landing/WhyChoose";
+import PlatformModules from "../components/landing/PlatformModules";
 
 function Landing() {
     return (
         <>
-            <Navbar />
-            <Hero />
-            <Features />
-            <CTA />
-            <Footer />
-        </>
+    <Navbar />
+    <Hero />
+    <WhyChoose />
+     {/* <HowItWorks /> */}
+    <PlatformModules />
+    <CTA />
+    <Footer />
+</>
     );
 }
 
