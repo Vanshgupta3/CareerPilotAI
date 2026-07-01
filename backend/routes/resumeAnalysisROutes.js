@@ -1,4 +1,5 @@
 const express = require("express");
+const upload = require("../middlewares/uploadMiddleware");
 
 const router = express.Router();
 
@@ -7,7 +8,12 @@ require("../middlewares/authMiddleware");
 
 const resumeAnalysisController =
 require("../controllers/resumeAnalysisController");
-
+router.post(
+    "/upload",
+    authMiddleware,
+    upload.single("resume"),
+    resumeAnalysisController.uploadResume
+);
 router.post(
     "/analyze",
     authMiddleware,

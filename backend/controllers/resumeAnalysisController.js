@@ -1,6 +1,16 @@
 const resumeAnalysisService = require("../services/resumeAnalysisService");
 const asyncHandler = require("../utils/asyncHandler");
+const uploadResume = asyncHandler(async (req, res) => {
 
+    res.status(200).json({
+
+        success: true,
+
+        message: "Resume uploaded successfully."
+
+    });
+
+});
 const analyzeResume = asyncHandler(async (req, res) => {
 
     const { resumeId } = req.body;
@@ -22,5 +32,6 @@ const analyzeResume = asyncHandler(async (req, res) => {
 });
 
 module.exports = {
+    uploadResume,
     analyzeResume
 };
