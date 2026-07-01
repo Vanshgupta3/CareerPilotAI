@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import toast from "react-hot-toast";
 
 function UploadBox({
 
@@ -6,7 +7,9 @@ function UploadBox({
     description,
     buttonText,
     selectedFile,
-    onFileSelect
+    onFileSelect,
+    onAnalyze,
+    loading
 
 }) {
 
@@ -14,10 +17,9 @@ function UploadBox({
 
     const handleButtonClick = () => {
 
-    
-    fileInputRef.current?.click();
+        fileInputRef.current?.click();
 
-};
+    };
 
     const handleFileChange = (e) => {
 
@@ -27,7 +29,9 @@ function UploadBox({
 
         if (file.type !== "application/pdf") {
 
-            alert("Please select a PDF file.");
+            toast.error("Please select a PDF file.");
+
+            fileInputRef.current.value = "";
 
             return;
 
@@ -36,13 +40,17 @@ function UploadBox({
         onFileSelect(file);
 
     };
-const handleRemove = () => {
 
-    onFileSelect(null);
+    const handleRemove = () => {
 
-    fileInputRef.current.value = "";
+        onFileSelect(null);
 
-};
+        fileInputRef.current.value = "";
+
+        toast.success("Resume removed.");
+
+    };
+
     return (
 
         <div className="bg-slate-900 border-2 border-dashed border-slate-700 rounded-2xl p-10 text-center hover:border-blue-500 transition">
@@ -75,7 +83,8 @@ const handleRemove = () => {
 
             <button
                 onClick={handleButtonClick}
-                className="mt-8 bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-xl text-white font-semibold transition"
+                disabled={loading}
+                className="mt-8 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed px-8 py-3 rounded-xl text-white font-semibold transition"
             >
 
                 {buttonText}
@@ -84,50 +93,53 @@ const handleRemove = () => {
 
             {selectedFile && (
 
-    <div className="mt-8 bg-slate-800 rounded-xl p-5">
+                <div className="mt-8 bg-slate-800 rounded-xl p-5">
 
-        <p className="text-green-400 font-semibold">
+                    <p className="text-green-400 font-semibold">
 
-            ✅ Ready for Analysis
+                        ✅ Ready for Analysis
 
-        </p>
+                    </p>
 
-        <p className="text-white mt-2">
+                    <p className="text-white mt-2">
 
-            {selectedFile.name}
+                        {selectedFile.name}
 
-        </p>
+                    </p>
 
-        <p className="text-slate-400 text-sm mt-1">
+                    <p className="text-slate-400 text-sm mt-1">
 
-            {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
+                        {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
 
-        </p>
+                    </p>
 
-        <div className="flex justify-center gap-4 mt-6">
+                    <div className="flex justify-center gap-4 mt-6">
 
-            <button
-                onClick={handleRemove}
-                className="bg-red-600 hover:bg-red-700 px-5 py-2 rounded-lg text-white transition"
-            >
+                        <button
+                            onClick={handleRemove}
+                            disabled={loading}
+                            className="bg-red-600 hover:bg-red-700 disabled:bg-red-800 disabled:cursor-not-allowed px-5 py-2 rounded-lg text-white transition"
+                        >
 
-                Remove
+                            Remove
 
-            </button>
+                        </button>
 
-            <button
-                className="bg-green-600 hover:bg-green-700 px-5 py-2 rounded-lg text-white transition"
-            >
+                        <button
+                            onClick={onAnalyze}
+                            disabled={loading}
+                            className="bg-green-600 hover:bg-green-700 disabled:bg-green-800 disabled:cursor-not-allowed px-5 py-2 rounded-lg text-white transition"
+                        >
 
-                Analyze Resume
+                            {loading ? "Uploading..." : "Analyze Resume"}
 
-            </button>
+                        </button>
 
-        </div>
+                    </div>
 
-    </div>
+                </div>
 
-)}
+            )}
 
             <p className="text-slate-500 text-sm mt-6">
 
