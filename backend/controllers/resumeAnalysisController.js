@@ -1,32 +1,35 @@
 const resumeAnalysisService = require("../services/resumeAnalysisService");
 const asyncHandler = require("../utils/asyncHandler");
+
 const uploadResume = asyncHandler(async (req, res) => {
 
+    const result = await resumeAnalysisService.uploadResume(
+        req.user.id,
+        req.file
+    );
+
     res.status(200).json({
-
         success: true,
-
-        message: "Resume uploaded successfully."
-
+        message: "Resume uploaded successfully.",
+        resume: result
     });
 
 });
 const analyzeResume = asyncHandler(async (req, res) => {
 
-    const { resumeId } = req.body;
-
-    if (!resumeId) {
-        const error = new Error("Resume ID is required.");
-        error.status = 400;
-        throw error;
-    }
-
     const analysis =
-        await resumeAnalysisService.analyzeResume(resumeId);
+        await resumeAnalysisService.analyzeResume(
+            req.user.id
+        );
 
     res.status(200).json({
+
         success: true,
+
+        message: "Resume analyzed successfully.",
+
         analysis
+
     });
 
 });

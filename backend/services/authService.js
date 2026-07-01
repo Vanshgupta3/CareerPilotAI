@@ -98,8 +98,58 @@ return {
 };
 
 };
+const getProfile = async (userId) => {
+
+    const user = await prisma.user.findUnique({
+
+        where: {
+            id: userId
+        },
+
+        include: {
+
+            resumes: {
+
+                orderBy: {
+
+                    uploadedAt: "desc"
+
+                },
+
+                take: 1
+
+            }
+
+        }
+
+    });
+
+    if (!user) {
+
+        const error = new Error("User not found.");
+        error.status = 404;
+        throw error;
+
+    }
+
+    return {
+
+        user: {
+
+            id: user.id,
+            name: user.name,
+            email: user.email
+
+        },
+
+        resume: user.resumes[0] || null
+
+    };
+
+};
 
 module.exports = {
     register,
-    login
+    login,
+    getProfile
 };
