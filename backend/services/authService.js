@@ -8,8 +8,10 @@ const register = async (userData) => {
 
     // Validation
     if (!name || !email || !password) {
-        throw new Error("All fields are required.");
-    }
+    const error = new Error("All fields are required.");
+    error.status = 400;
+    throw error;
+}
 
     // Check if email already exists
     const existingUser = await prisma.user.findUnique({
@@ -19,8 +21,10 @@ const register = async (userData) => {
     });
 
     if (existingUser) {
-        throw new Error("Email already registered.");
-    }
+    const error = new Error("Email already registered.");
+    error.status = 409;
+    throw error;
+}
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -33,14 +37,22 @@ const register = async (userData) => {
             password: hashedPassword
         }
     });
+    const token = generateToken(user);
 
     // Return safe data
     return {
+
+    token,
+
+    user: {
+
         id: user.id,
         name: user.name,
-        email: user.email,
-        createdAt: user.createdAt
-    };
+        email: user.email
+
+    }
+
+};
 };
 
 const login = async (userData) => {
@@ -48,8 +60,10 @@ const login = async (userData) => {
     const { email, password } = userData;
 
     if (!email || !password) {
-        throw new Error("Email and password are required.");
-    }
+    const error = new Error("Email and password are required.");
+    error.status = 400;
+    throw error;
+}
 
     const user = await prisma.user.findUnique({
         where: {
@@ -58,15 +72,19 @@ const login = async (userData) => {
     });
 
     if (!user) {
-        throw new Error("Invalid email or password.");
-    }
+    const error = new Error("Invalid email or password.");
+    error.status = 401;
+    throw error;
+}
     const isPasswordCorrect = await bcrypt.compare(
     password,
     user.password
 );
 
 if (!isPasswordCorrect) {
-    throw new Error("Invalid email or password.");
+    const error = new Error("Invalid email or password.");
+    error.status = 401;
+    throw error;
 }
 const token = generateToken(user);
 

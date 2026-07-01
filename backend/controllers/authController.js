@@ -3,13 +3,13 @@ const asyncHandler = require("../utils/asyncHandler");
 
 const register = asyncHandler(async (req, res) => {
 
-    const user = await authService.register(req.body);
+    const result = await authService.register(req.body);
 
     res.status(201).json({
-        success: true,
-        message: "User registered successfully",
-        user
-    });
+    success: true,
+    message: "User registered successfully",
+    ...result
+});
 
 });
 
