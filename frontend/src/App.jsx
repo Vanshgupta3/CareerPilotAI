@@ -1,5 +1,5 @@
 import { Routes, Route } from "react-router-dom";
-
+import ProtectedRoute from "./components/ProtectedRoute";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -14,10 +14,41 @@ function App() {
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/resume" element={<ResumeAnalysis />} />
-      <Route path="/interview" element={<Interview />} />
-      <Route path="/feedback" element={<Feedback />} />
+      <Route
+    path="/dashboard"
+    element={
+        <ProtectedRoute>
+            <Dashboard />
+        </ProtectedRoute>
+    }
+/>
+
+<Route
+    path="/resume"
+    element={
+        <ProtectedRoute>
+            <ResumeAnalysis />
+        </ProtectedRoute>
+    }
+/>
+
+<Route
+    path="/interview"
+    element={
+        <ProtectedRoute>
+            <Interview />
+        </ProtectedRoute>
+    }
+/>
+
+<Route
+    path="/feedback"
+    element={
+        <ProtectedRoute>
+            <Feedback />
+        </ProtectedRoute>
+    }
+/>
     </Routes>
   );
 }

@@ -1,4 +1,5 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import { getProfile } from "../services/authService";
 
 const AuthContext = createContext();
 
@@ -29,6 +30,31 @@ export function AuthProvider({ children }) {
         localStorage.removeItem("token");
 
     };
+    useEffect(() => {
+
+    const fetchProfile = async () => {
+
+        if (!token) return;
+
+        try {
+
+            const result = await getProfile(token);
+
+            setUser(result.user);
+
+        } catch (err) {
+
+            console.error(err);
+
+            logoutUser();
+
+        }
+
+    };
+
+    fetchProfile();
+
+}, [token]);
 
     return (
 
