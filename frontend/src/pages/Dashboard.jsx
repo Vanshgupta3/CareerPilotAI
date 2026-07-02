@@ -1,10 +1,21 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import Navbar from "../components/Navbar";
 import DashboardCard from "../components/DashboardCard";
+
 import { useAuth } from "../context/AuthContext";
+import { getProfile } from "../services/authService";
 
 function Dashboard() {
 
-    const { user } = useAuth();
+    const navigate = useNavigate();
+
+    const { user, token } = useAuth();
+
+    const [resume, setResume] = useState(null);
+
+    const [analysis, setAnalysis] = useState(null);
 
     const hour = new Date().getHours();
 
@@ -27,6 +38,34 @@ function Dashboard() {
         greeting = "Good Night 🌌";
 
     }
+
+    useEffect(() => {
+
+        const fetchProfile = async () => {
+
+            try {
+
+                const result = await getProfile(token);
+
+                setResume(result.resume);
+
+                setAnalysis(result.analysis);
+
+            } catch (error) {
+
+                console.error(error);
+
+            }
+
+        };
+
+        if (token) {
+
+            fetchProfile();
+
+        }
+
+    }, [token]);
 
     return (
 
@@ -61,6 +100,137 @@ function Dashboard() {
                     </p>
 
                 </div>
+
+                {/* Resume Overview */}
+
+               {/* Resume Overview */}
+
+{resume && (
+
+    <div className="bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-800 rounded-2xl p-8 mb-10 shadow-lg">
+
+        <div className="flex items-center justify-between mb-8">
+
+            <div>
+
+                <h2 className="text-3xl font-bold text-white">
+
+                    📄 Resume Overview
+
+                </h2>
+
+                <p className="text-slate-400 mt-2">
+
+                    Your latest resume and ATS analysis.
+
+                </p>
+
+            </div>
+
+            {analysis && (
+
+                <button
+                    onClick={() => navigate("/ats-report")}
+                    className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-xl text-white font-semibold transition"
+                >
+
+                    View ATS Report
+
+                </button>
+
+            )}
+
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6">
+
+            {/* Resume */}
+
+            <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
+
+                <p className="text-slate-400 text-sm">
+
+                    Resume
+
+                </p>
+
+                <h3 className="text-white text-xl font-bold mt-3 truncate">
+
+                    📄 {resume.title}
+
+                </h3>
+
+                <p className="text-slate-500 mt-3 text-sm">
+
+                    Uploaded
+
+                </p>
+
+                <p className="text-white">
+
+                    {new Date(resume.uploadedAt).toLocaleDateString()}
+
+                </p>
+
+            </div>
+
+            {/* ATS */}
+
+            <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
+
+                <p className="text-slate-400 text-sm">
+
+                    Latest ATS Score
+
+                </p>
+
+                <h3 className="text-5xl font-bold text-green-400 mt-4">
+
+                    {analysis ? `${analysis.atsScore}%` : "--"}
+
+                </h3>
+
+                <p className="mt-4 text-slate-300">
+
+                    {analysis
+                        ? "Resume analyzed successfully"
+                        : "Not analyzed yet"}
+
+                </p>
+
+            </div>
+
+            {/* Status */}
+
+            <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
+
+                <p className="text-slate-400 text-sm">
+
+                    Resume Status
+
+                </p>
+
+                <h3 className="text-2xl font-bold text-green-400 mt-4">
+
+                    Ready ✅
+
+                </h3>
+
+                <p className="mt-4 text-slate-300">
+
+                    {analysis
+                        ? "Ready for interviews"
+                        : "Analyze your resume"}
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+)}
 
                 {/* Dashboard Cards */}
 

@@ -1,11 +1,16 @@
+import { useNavigate } from "react-router-dom";
+
 function CurrentResumeCard({
 
     resume,
+    analysis,
     onAnalyze,
     onReplace,
     loading
 
 }) {
+
+    const navigate = useNavigate();
 
     const resumeUrl =
         `http://localhost:5000/${resume.fileUrl.replace(/\\/g, "/")}`;
@@ -35,9 +40,48 @@ function CurrentResumeCard({
 
                 </p>
 
+                {analysis && (
+
+                    <div className="mt-5 bg-slate-800 rounded-xl p-4">
+
+                        <h3 className="text-white font-semibold">
+
+                            Latest Analysis
+
+                        </h3>
+
+                        <p className="text-green-400 text-2xl font-bold mt-2">
+
+                            🎯 ATS Score: {analysis.atsScore}%
+
+                        </p>
+
+                        <p className="text-slate-400 mt-2">
+
+                            Grammar: {analysis.grammarScore}% | Formatting: {analysis.formatScore}%
+
+                        </p>
+
+                    </div>
+
+                )}
+
             </div>
 
             <div className="flex flex-wrap gap-4 mt-8">
+
+                {analysis && (
+
+                    <button
+                        onClick={() => navigate("/ats-report")}
+                        className="bg-indigo-600 hover:bg-indigo-700 px-6 py-3 rounded-xl text-white transition"
+                    >
+
+                        📊 View ATS Report
+
+                    </button>
+
+                )}
 
                 <button
                     onClick={onAnalyze}
@@ -47,7 +91,9 @@ function CurrentResumeCard({
 
                     {loading
                         ? "Analyzing..."
-                        : "🤖 Analyze Again"}
+                        : analysis
+                        ? "🔄 Analyze Again"
+                        : "🤖 Analyze Resume"}
 
                 </button>
 

@@ -6,6 +6,7 @@ import Navbar from "../components/Navbar";
 import UploadBox from "../components/UploadBox";
 import CurrentResumeCard from "../components/CurrentResumeCard";
 
+
 import { useAuth } from "../context/AuthContext";
 import { getProfile } from "../services/authService";
 import {
@@ -22,6 +23,8 @@ function ResumeAnalysis() {
     const [selectedFile, setSelectedFile] = useState(null);
 
     const [currentResume, setCurrentResume] = useState(null);
+    const [analysis, setAnalysis] = useState(null);
+    const [isReplacing, setIsReplacing] = useState(false);
 
     const [pageLoading, setPageLoading] = useState(true);
 
@@ -34,6 +37,8 @@ function ResumeAnalysis() {
             const result = await getProfile(token);
 
             setCurrentResume(result.resume);
+
+setAnalysis(result.analysis);
 
         } catch (error) {
 
@@ -97,7 +102,9 @@ function ResumeAnalysis() {
             toast.success(analysisResult.message);
 
             await fetchProfile();
+setIsReplacing(false);
 
+setSelectedFile(null);
             navigate("/ats-report");
 
         } catch (error) {
@@ -119,11 +126,11 @@ function ResumeAnalysis() {
 
     const handleReplace = () => {
 
-        setCurrentResume(null);
+    setIsReplacing(true);
 
-        setSelectedFile(null);
+    setSelectedFile(null);
 
-    };
+};
 
     if (pageLoading) {
 
@@ -168,28 +175,35 @@ function ResumeAnalysis() {
 
                 </div>
 
-                {currentResume ? (
+                {currentResume && (
 
-                    <CurrentResumeCard
-                        resume={currentResume}
-                        onAnalyze={handleAnalyze}
-                        onReplace={handleReplace}
-                        loading={loading}
-                    />
+    <CurrentResumeCard
+        resume={currentResume}
+        analysis={analysis}
+        onAnalyze={handleAnalyze}
+        onReplace={handleReplace}
+        loading={loading}
+    />
 
-                ) : (
+)}
 
-                    <UploadBox
-                        title="Upload Your Resume"
-                        description="Drag & drop your resume or click below."
-                        buttonText="Choose Resume"
-                        selectedFile={selectedFile}
-                        onFileSelect={setSelectedFile}
-                        onAnalyze={handleAnalyze}
-                        loading={loading}
-                    />
+{(!currentResume || isReplacing) && (
 
-                )}
+    <div className="mt-8">
+
+        <UploadBox
+            title="Upload New Resume"
+            description="Choose a new PDF resume to replace your current one."
+            buttonText="Choose Resume"
+            selectedFile={selectedFile}
+            onFileSelect={setSelectedFile}
+            onAnalyze={handleAnalyze}
+            loading={loading}
+        />
+
+    </div>
+
+)}
 
             </div>
 

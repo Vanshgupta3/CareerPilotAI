@@ -3,40 +3,105 @@ import { Link } from "react-router-dom";
 function DashboardCard({
 
     title,
-
     description,
-
     buttonText,
-
     link
 
 }) {
 
-    
+    const icons = {
+
+        "Resume Analysis": "📄",
+        "AI Mock Interview": "🎤",
+        "Interview Feedback": "📊",
+        "Career Progress": "📈"
+
+    };
+
     return (
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-lg">
+        <div
+            className="
+                group
+                bg-gradient-to-br
+                from-slate-900
+                to-slate-800
+                border
+                border-slate-800
+                rounded-2xl
+                p-7
+                shadow-lg
+                transition-all
+                duration-300
+                hover:-translate-y-2
+                hover:border-blue-500
+                hover:shadow-2xl
+                hover:shadow-blue-500/20
+            "
+        >
 
-            <h2 className="text-2xl font-semibold text-white">
+            <div className="flex items-center gap-4">
 
-                {title}
+                <div className="text-5xl">
 
-            </h2>
+                    {icons[title] || "✨"}
 
-            <p className="text-slate-400 mt-3">
+                </div>
 
-                {description}
+                <div>
 
-            </p>
+                    <h2 className="text-2xl font-bold text-white">
 
-            <Link
-                to={link}
-                className="inline-block mt-6 bg-blue-600 hover:bg-blue-700 transition px-5 py-3 rounded-xl text-white font-medium"
-            >
+                        {title}
 
-                {buttonText}
+                    </h2>
 
-            </Link>
+                    <p className="text-slate-400 mt-2">
+
+                        {description}
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div className="mt-8 flex justify-between items-center">
+
+                <Link
+                    to={link}
+                    className="
+                        bg-blue-600
+                        hover:bg-blue-700
+                        px-6
+                        py-3
+                        rounded-xl
+                        text-white
+                        font-semibold
+                        transition
+                    "
+                >
+
+                    {buttonText}
+
+                </Link>
+
+                <span
+                    className="
+                        text-3xl
+                        text-slate-500
+                        transition-all
+                        duration-300
+                        group-hover:text-blue-400
+                        group-hover:translate-x-2
+                    "
+                >
+
+                    →
+
+                </span>
+
+            </div>
 
         </div>
 
