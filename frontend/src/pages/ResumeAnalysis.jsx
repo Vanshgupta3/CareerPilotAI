@@ -1,44 +1,104 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
 import Navbar from "../components/Navbar";
 import UploadBox from "../components/UploadBox";
+import CurrentResumeCard from "../components/CurrentResumeCard";
 
 import { useAuth } from "../context/AuthContext";
-import { uploadResume } from "../services/resumeService";
+import { getProfile } from "../services/authService";
+import {
+    uploadResume,
+    analyzeResume
+} from "../services/resumeService";
 
 function ResumeAnalysis() {
 
-    const [selectedFile, setSelectedFile] = useState(null);
-
-    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
 
     const { token } = useAuth();
 
-    const handleAnalyze = async () => {
+    const [selectedFile, setSelectedFile] = useState(null);
 
-        if (!selectedFile) {
+    const [currentResume, setCurrentResume] = useState(null);
 
-            toast.error("Please select a resume first.");
+    const [pageLoading, setPageLoading] = useState(true);
 
-            return;
+    const [loading, setLoading] = useState(false);
+
+    const fetchProfile = async () => {
+
+        try {
+
+            const result = await getProfile(token);
+
+            setCurrentResume(result.resume);
+
+        } catch (error) {
+
+            console.error(error);
+
+        } finally {
+
+            setPageLoading(false);
 
         }
+
+    };
+
+    useEffect(() => {
+
+        fetchProfile();
+
+    }, []);
+
+    const handleAnalyze = async () => {
 
         setLoading(true);
 
         try {
 
+            // Existing resume → only analyze
+            if (currentResume && !selectedFile) {
+
+                const analysisResult = await analyzeResume(token);
+
+                toast.success(analysisResult.message);
+
+                navigate("/ats-report");
+
+                return;
+
+            }
+
+            // New upload
+            if (!selectedFile) {
+
+                toast.error("Please select a resume first.");
+
+                return;
+
+            }
+
             const formData = new FormData();
 
             formData.append("resume", selectedFile);
 
-            const result = await uploadResume(
+            const uploadResult = await uploadResume(
                 formData,
                 token
             );
 
-            toast.success(result.message);
+            toast.success(uploadResult.message);
+
+            const analysisResult = await analyzeResume(token);
+
+            toast.success(analysisResult.message);
+
+            await fetchProfile();
+
+            navigate("/ats-report");
 
         } catch (error) {
 
@@ -46,7 +106,7 @@ function ResumeAnalysis() {
 
             toast.error(
                 error.response?.data?.message ||
-                "Resume upload failed."
+                "Resume analysis failed."
             );
 
         } finally {
@@ -56,6 +116,32 @@ function ResumeAnalysis() {
         }
 
     };
+
+    const handleReplace = () => {
+
+        setCurrentResume(null);
+
+        setSelectedFile(null);
+
+    };
+
+    if (pageLoading) {
+
+        return (
+
+            <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+
+                <h1 className="text-white text-2xl">
+
+                    Loading...
+
+                </h1>
+
+            </div>
+
+        );
+
+    }
 
     return (
 
@@ -76,22 +162,34 @@ function ResumeAnalysis() {
                     <p className="text-slate-400 mt-3">
 
                         Upload your resume and receive an AI-powered ATS score,
-                        missing skills analysis, and personalized suggestions
-                        to improve your chances of getting shortlisted.
+                        missing skills analysis, and personalized suggestions.
 
                     </p>
 
                 </div>
 
-                <UploadBox
-                    title="Upload Your Resume"
-                    description="Drag & drop your resume or click the button below."
-                    buttonText="Choose Resume"
-                    selectedFile={selectedFile}
-                    onFileSelect={setSelectedFile}
-                    onAnalyze={handleAnalyze}
-                    loading={loading}
-                />
+                {currentResume ? (
+
+                    <CurrentResumeCard
+                        resume={currentResume}
+                        onAnalyze={handleAnalyze}
+                        onReplace={handleReplace}
+                        loading={loading}
+                    />
+
+                ) : (
+
+                    <UploadBox
+                        title="Upload Your Resume"
+                        description="Drag & drop your resume or click below."
+                        buttonText="Choose Resume"
+                        selectedFile={selectedFile}
+                        onFileSelect={setSelectedFile}
+                        onAnalyze={handleAnalyze}
+                        loading={loading}
+                    />
+
+                )}
 
             </div>
 

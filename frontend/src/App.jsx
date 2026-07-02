@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import ResumeAnalysis from "./pages/ResumeAnalysis";
 import Interview from "./pages/Interview";
 import Feedback from "./pages/Feedback";
+import ATSReport from "./pages/ATSReport";
 
 function App() {
   return (
@@ -40,7 +41,14 @@ function App() {
         </ProtectedRoute>
     }
 />
-
+<Route
+    path="/ats-report"
+    element={
+        <ProtectedRoute>
+            <ATSReport />
+        </ProtectedRoute>
+    }
+/>
 <Route
     path="/feedback"
     element={
