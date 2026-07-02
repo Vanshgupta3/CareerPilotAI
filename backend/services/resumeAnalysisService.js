@@ -2,6 +2,7 @@ const prisma = require("../prisma/prismaClient");
 const model = require("./geminiService");
 const path = require("path");
 const fs = require("fs");
+const resumeService = require("./resumeService");
 const uploadResume = async (userId, file) => {
 
     if (!file) {
@@ -16,43 +17,60 @@ const uploadResume = async (userId, file) => {
 
             userId
 
+        },
+
+        include: {
+
+            analysis: true
+
         }
 
     });
 
     if (existingResume) {
 
-    if (fs.existsSync(existingResume.fileUrl)) {
+        // Delete old PDF
+        if (fs.existsSync(existingResume.fileUrl)) {
 
-        fs.unlinkSync(existingResume.fileUrl);
+            fs.unlinkSync(existingResume.fileUrl);
+
+        }
+
+        // Delete old analysis first
+        if (existingResume.analysis) {
+
+            await prisma.resumeAnalysis.delete({
+
+                where: {
+
+                    resumeId: existingResume.id
+
+                }
+
+            });
+
+        }
+
+        // Delete old resume
+        await prisma.resume.delete({
+
+            where: {
+
+                id: existingResume.id
+
+            }
+
+        });
 
     }
 
-    await prisma.resume.delete({
+    // Save new resume (extracts PDF text automatically)
+    const resume = await resumeService.saveResume(
 
-        where: {
+        file,
+        userId
 
-            id: existingResume.id
-
-        }
-
-    });
-
-}
-
-    const resume = await prisma.resume.create({
-
-        data: {
-
-            title: file.originalname,
-
-            fileUrl: file.path,
-
-            userId
-
-        }
-
-    });
+    );
 
     return resume;
 
@@ -82,6 +100,17 @@ const analyzeResume = async (userId) => {
     const error = new Error("No resume found.");
 
     error.status = 404;
+
+    throw error;
+
+}
+if (!resume.content) {
+
+    const error = new Error(
+        "Resume content not found. Please upload the resume again."
+    );
+
+    error.status = 400;
 
     throw error;
 
@@ -169,12 +198,53 @@ const cleanedResponse = response
 return resumeAnalysis;
 
 };
+const getLatestAnalysis = async (userId) => {
+
+    const resume = await prisma.resume.findFirst({
+
+        where: {
+
+            userId
+
+        },
+
+        orderBy: {
+
+            uploadedAt: "desc"
+
+        },
+
+        include: {
+
+            analysis: true
+
+        }
+
+    });
+
+    if (!resume) {
+
+        const error = new Error("Resume not found.");
+        error.status = 404;
+        throw error;
+
+    }
+
+    if (!resume.analysis) {
+
+        const error = new Error("Resume has not been analyzed yet.");
+        error.status = 404;
+        throw error;
+
+    }
+
+    return resume.analysis;
+
+};
 
 
 module.exports = {
-
     uploadResume,
-
-    analyzeResume
-
+    analyzeResume,
+    getLatestAnalysis
 };

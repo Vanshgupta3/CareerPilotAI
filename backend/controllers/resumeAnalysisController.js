@@ -33,8 +33,24 @@ const analyzeResume = asyncHandler(async (req, res) => {
     });
 
 });
+const getLatestAnalysis = asyncHandler(async (req, res) => {
 
+    const analysis =
+        await resumeAnalysisService.getLatestAnalysis(
+            req.user.id
+        );
+
+    res.status(200).json({
+
+        success: true,
+
+        analysis
+
+    });
+
+});
 module.exports = {
     uploadResume,
-    analyzeResume
+    analyzeResume,
+    getLatestAnalysis
 };

@@ -19,5 +19,10 @@ router.post(
     authMiddleware,
     resumeAnalysisController.analyzeResume
 );
+router.get(
+    "/latest",
+    authMiddleware,
+    resumeAnalysisController.getLatestAnalysis
+);
 
 module.exports = router;
