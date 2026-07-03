@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import StatCard from "../components/StatCard";
 import Navbar from "../components/Navbar";
 import DashboardCard from "../components/DashboardCard";
-
+//import { useEffect, useState } from "react";
+import { getDashboardStats } from "../services/dashboardService";
 import { useAuth } from "../context/AuthContext";
 import { getProfile } from "../services/authService";
 
@@ -18,6 +19,20 @@ function Dashboard() {
     const [analysis, setAnalysis] = useState(null);
 
     const hour = new Date().getHours();
+    const [stats, setStats] = useState({
+
+    totalInterviews: 0,
+
+    completedInterviews: 0,
+
+    averageScore: 0,
+
+    highestScore: 0,
+
+    atsScore: 0
+
+});
+
 
     let greeting = "";
 
@@ -38,7 +53,29 @@ function Dashboard() {
         greeting = "Good Night 🌌";
 
     }
+useEffect(() => {
 
+    fetchDashboardStats();
+
+}, []);
+
+const fetchDashboardStats = async () => {
+
+    try {
+
+        const result = await getDashboardStats(token);
+
+        setStats(result.stats);
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+    }
+
+};
     useEffect(() => {
 
         const fetchProfile = async () => {
@@ -231,7 +268,33 @@ function Dashboard() {
     </div>
 
 )}
+<div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
 
+    <StatCard
+        title="Interviews"
+        value={stats.totalInterviews}
+        color="blue"
+    />
+
+    <StatCard
+        title="Completed"
+        value={stats.completedInterviews}
+        color="green"
+    />
+
+    <StatCard
+        title="Average Score"
+        value={`${stats.averageScore}%`}
+        color="yellow"
+    />
+
+    <StatCard
+        title="ATS Score"
+        value={`${stats.atsScore}%`}
+        color="purple"
+    />
+
+</div>
                 {/* Dashboard Cards */}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

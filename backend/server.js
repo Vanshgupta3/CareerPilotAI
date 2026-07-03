@@ -10,7 +10,8 @@ const resumeRoutes = require("./routes/resumeRoutes");
 const interviewRoutes = require("./routes/interviewRoutes");
 const answerRoutes = require("./routes/answerRoutes");
 const resumeAnalysisRoutes = require("./routes/resumeAnalysisRoutes");
-
+const dashboardRoutes =
+    require("./routes/dashboardRoutes");
 const errorMiddleware = require("./middlewares/errorMiddleware");
 
 const app = express();
@@ -36,6 +37,7 @@ app.use("/api/resume", resumeRoutes);
 app.use("/api/interview", interviewRoutes);
 app.use("/api/answer", answerRoutes);
 app.use("/api/resume-analysis", resumeAnalysisRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 app.use(errorMiddleware);
 
