@@ -102,10 +102,34 @@ const getLatestFeedback = asyncHandler(async (req, res) => {
     });
 
 });
+const getInterviewHistory = asyncHandler(async (req, res) => {
+
+    const interviews =
+        await interviewService.getInterviewHistory(
+            req.user.id
+        );
+
+    res.status(200).json({
+
+        success: true,
+
+        interviews
+
+    });
+
+});
 module.exports = {
+
     generateQuestions,
+
     getInterviewQuestions,
+
     generateInterviewFeedback,
+
     getInterviewFeedback,
-    getLatestFeedback
+
+    getLatestFeedback,
+
+    getInterviewHistory
+
 };

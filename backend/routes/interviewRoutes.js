@@ -22,6 +22,11 @@ router.get(
     interviewController.getInterviewQuestions
 );
 router.get(
+    "/history",
+    authMiddleware,
+    interviewController.getInterviewHistory
+);
+router.get(
     "/latest-feedback",
     authMiddleware,
     interviewController.getLatestFeedback

@@ -39,7 +39,7 @@ Candidate Resume:
 ${resume.content}
 
 Instructions:
-
+- Also ask different question from same resume if uploaded again
 - 40% questions should be based on the candidate's resume.
 - 60% should test general knowledge for the selected role.
 - Questions should progress from easy to difficult.
@@ -270,11 +270,48 @@ const getLatestFeedback = async (userId) => {
     };
 
 };
+const getInterviewHistory = async (userId) => {
+
+    const interviews = await prisma.interview.findMany({
+
+        where: {
+            userId
+        },
+
+        include: {
+
+            feedback: {
+
+                select: {
+                    overallScore: true
+                }
+
+            }
+
+        },
+
+        orderBy: {
+            createdAt: "desc"
+        }
+
+    });
+
+    return interviews;
+
+};
 
 module.exports = {
+
     generateQuestions,
+
     getInterviewQuestions,
+
     generateInterviewFeedback,
+
     getInterviewFeedback,
-    getLatestFeedback
+
+    getLatestFeedback,
+
+    getInterviewHistory
+
 };
