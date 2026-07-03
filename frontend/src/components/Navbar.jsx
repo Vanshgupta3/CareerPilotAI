@@ -1,12 +1,15 @@
 import { Link, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 import { useAuth } from "../context/AuthContext";
+
+import { getLatestFeedback } from "../services/interviewService";
 
 function Navbar() {
 
     const navigate = useNavigate();
 
-    const { logoutUser } = useAuth();
+    const { token, logoutUser } = useAuth();
 
     const handleLogout = () => {
 
@@ -16,47 +19,66 @@ function Navbar() {
 
     };
 
+    const handleFeedback = async () => {
+
+        try {
+
+            const result = await getLatestFeedback(token);
+
+            navigate(`/feedback/${result.interviewId}`);
+
+        } catch (error) {
+
+            console.error(error);
+
+            toast.error("No interview feedback found.");
+
+        }
+
+    };
+
     return (
 
         <nav className="bg-slate-900 border-b border-slate-800">
 
             <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
 
-                <h1 className="text-2xl font-bold text-white">
-
+                <h1
+                    onClick={() => navigate("/dashboard")}
+                    className="text-2xl font-bold text-white cursor-pointer"
+                >
                     CareerPilot AI
-
                 </h1>
 
                 <div className="flex items-center gap-6">
 
                     <Link
                         to="/dashboard"
-                        className="text-slate-300 hover:text-white"
+                        className="text-slate-300 hover:text-white transition"
                     >
                         Dashboard
                     </Link>
 
                     <Link
                         to="/resume"
-                        className="text-slate-300 hover:text-white"
+                        className="text-slate-300 hover:text-white transition"
                     >
                         Resume
                     </Link>
 
                     <Link
                         to="/interview"
-                        className="text-slate-300 hover:text-white"
+                        className="text-slate-300 hover:text-white transition"
                     >
                         Interview
                     </Link>
 
-                    <Link
-                        to="/feedback"
-                        className="text-slate-300 hover:text-white"
+                    <button
+                        onClick={handleFeedback}
+                        className="text-slate-300 hover:text-white transition"
                     >
                         Feedback
-                    </Link>
+                    </button>
 
                     <button
                         onClick={handleLogout}

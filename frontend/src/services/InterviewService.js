@@ -103,3 +103,46 @@ export const generateInterviewFeedback = async (
     return response.data;
 
 };
+
+// Get Interview Feedback
+export const getInterviewFeedback = async (
+
+    interviewId,
+    token
+
+) => {
+
+    const response = await axios.get(
+
+        `${INTERVIEW_API}/feedback/${interviewId}`,
+
+        {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+
+    );
+
+    return response.data;
+
+};
+
+// Get Latest Feedback
+export const getLatestFeedback = async (token) => {
+
+    const response = await axios.get(
+
+        `${INTERVIEW_API}/latest-feedback`,
+
+        {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+
+    );
+
+    return response.data;
+
+};

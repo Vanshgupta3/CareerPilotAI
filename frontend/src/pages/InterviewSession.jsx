@@ -95,7 +95,7 @@ function InterviewSession() {
 
             toast.success("Interview completed successfully.");
 
-            navigate("/feedback");
+            navigate(`/feedback/${id}`);
 
         } catch (error) {
 

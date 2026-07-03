@@ -60,7 +60,7 @@ function App() {
     }
 />
 <Route
-    path="/feedback"
+    path="/feedback/:interviewId"
     element={
         <ProtectedRoute>
             <Feedback />
