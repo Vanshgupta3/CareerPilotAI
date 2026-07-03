@@ -1,7 +1,13 @@
 const prisma = require("../prisma/prismaClient");
 const model = require("./geminiService");
 
-const generateQuestions = async (resumeId) => {
+const generateQuestions = async ({
+    resumeId,
+    role,
+    level,
+    type,
+    questionCount
+}) => {
 
     // Get Resume
     const resume = await prisma.resume.findUnique({
@@ -17,113 +23,155 @@ const generateQuestions = async (resumeId) => {
     const prompt = `
 You are a Senior Technical Interviewer.
 
-Based on the following resume, generate exactly 10 technical interview questions.
+Generate exactly ${questionCount} interview questions.
 
-Focus only on:
-- Skills
-- Projects
-- Technologies
-- Experience
+Role:
+${role}
 
-Return ONLY valid JSON.
+Experience Level:
+${level}
+
+Interview Type:
+${type}
+
+Candidate Resume:
+
+${resume.content}
+
+Instructions:
+
+- 40% questions should be based on the candidate's resume.
+- 60% should test general knowledge for the selected role.
+- Questions should progress from easy to difficult.
+- Do not ask duplicate questions.
+- Return ONLY valid JSON.
 
 Example:
 
-[
-  {
-    "question": "Explain JWT Authentication."
-  },
-  {
-    "question": "Why did you choose Prisma?"
-  }
-]
-
-Do not write markdown.
-Do not write explanations.
-Return ONLY the JSON array.
-
-Resume:
-
-
-
-${resume.content}
+{
+    "questions": [
+        {
+            "question": "Explain Virtual DOM in React."
+        },
+        {
+            "question": "What is JWT Authentication?"
+        }
+    ]
+}
 `;
 
-    
     const result = await model.generateContent(prompt);
 
-const response = result.response.text();
+    const response = result.response.text();
 
-// Remove markdown if Gemini adds it
-const cleanedResponse = response
-    .replace(/```json/g, "")
-    .replace(/```/g, "")
-    .trim();
+    const cleanedResponse = response
+        .replace(/```json/g, "")
+        .replace(/```/g, "")
+        .trim();
 
-// Convert JSON string to JavaScript array
-const questions = JSON.parse(cleanedResponse);
-const interview = await prisma.interview.create({
-    data: {
-        role: "Software Engineer",
-        level: "Medium",
-        userId: resume.userId,
-        resumeId: resume.id
+    let parsedQuestions;
+
+    try {
+
+        parsedQuestions = JSON.parse(cleanedResponse);
+
+    } catch (error) {
+
+        throw new Error("Invalid response received from Gemini.");
+
     }
-    
-});
-for (const item of questions) {
 
-    await prisma.question.create({
+    const interview = await prisma.interview.create({
+
         data: {
-            questionText: item.question,
-            interviewId: interview.id
+
+            role,
+            level,
+            type,
+            userId: resume.userId,
+            resumeId: resume.id
+
         }
+
     });
 
-}
+    await prisma.question.createMany({
 
-return interview;
+        data: parsedQuestions.questions.map((item) => ({
+
+            questionText: item.question,
+            interviewId: interview.id
+
+        }))
+
+    });
+
+    return {
+
+        interviewId: interview.id,
+        totalQuestions: parsedQuestions.questions.length
+
+    };
 
 };
+
 const getInterviewQuestions = async (interviewId) => {
-const interview = await prisma.interview.findUnique({
-    where: {
-        id: interviewId
-    },
-    include: {
-        questions: true
-    }
-});
-if (!interview) {
-    throw new Error("Interview not found.");
-}
-return interview.questions;
-};
-const generateInterviewFeedback = async (interviewId) => {
-const interview = await prisma.interview.findUnique({
 
-    where: {
-        id: interviewId
-    },
+    const interview = await prisma.interview.findUnique({
 
-    include: {
+        where: {
+            id: interviewId
+        },
 
-        questions: {
-            include: {
-                answers: true
-            }
+        include: {
+            questions: true
         }
 
+    });
+
+    if (!interview) {
+
+        throw new Error("Interview not found.");
+
     }
 
-});
-if (!interview) {
-    throw new Error("Interview not found.");
-}
-let interviewSummary = "";
-for (const question of interview.questions) {
+    return interview.questions;
 
-    interviewSummary += `
+};
+
+const generateInterviewFeedback = async (interviewId) => {
+
+    const interview = await prisma.interview.findUnique({
+
+        where: {
+            id: interviewId
+        },
+
+        include: {
+
+            questions: {
+
+                include: {
+                    answers: true
+                }
+
+            }
+
+        }
+
+    });
+
+    if (!interview) {
+
+        throw new Error("Interview not found.");
+
+    }
+
+    let interviewSummary = "";
+
+    for (const question of interview.questions) {
+
+        interviewSummary += `
 Question:
 ${question.questionText}
 
@@ -133,58 +181,68 @@ ${question.answers[0]?.answerText || "No answer submitted."}
 Score:
 ${question.answers[0]?.score ?? 0}
 
--------------------------
+---------------------------------------
 `;
 
-}
-const prompt = `
+    }
+
+    const prompt = `
 You are a Senior Technical Interviewer.
 
-Below is the complete interview performance of a candidate.
+Below is a candidate's complete interview.
 
 ${interviewSummary}
 
-Based on all the answers, provide:
-
-1. Overall score (0-10)
-2. Overall strengths
-3. Overall weaknesses
-4. Suggestions for improvement
-
-Return ONLY valid JSON.
+Evaluate the interview and return ONLY valid JSON.
 
 Example:
 
 {
     "overallScore": 8,
-    "strengths": "Strong backend development knowledge and good database understanding.",
+    "strengths": "Strong backend development knowledge and database concepts.",
     "weaknesses": "Needs improvement in system design and operating systems.",
-    "suggestions": "Practice low-level design, concurrency and networking concepts."
+    "suggestions": "Practice networking, OS and low-level design."
 }
 `;
-const result = await model.generateContent(prompt);
 
-const response = result.response.text();
+    const result = await model.generateContent(prompt);
 
-const cleanedResponse = response
-    .replace(/```json/g, "")
-    .replace(/```/g, "")
-    .trim();
+    const response = result.response.text();
 
-const feedback = JSON.parse(cleanedResponse);
-await prisma.feedback.create({
-    data: {
-        overallScore: feedback.overallScore,
-        strengths: feedback.strengths,
-        weaknesses: feedback.weaknesses,
-        suggestions: feedback.suggestions,
-        interviewId: interview.id
+    const cleanedResponse = response
+        .replace(/```json/g, "")
+        .replace(/```/g, "")
+        .trim();
+
+    let feedback;
+
+    try {
+
+        feedback = JSON.parse(cleanedResponse);
+
+    } catch (error) {
+
+        throw new Error("Invalid feedback received from Gemini.");
+
     }
-});
-return feedback;
+
+    await prisma.feedback.create({
+
+        data: {
+
+            overallScore: feedback.overallScore,
+            strengths: feedback.strengths,
+            weaknesses: feedback.weaknesses,
+            suggestions: feedback.suggestions,
+            interviewId: interview.id
+
+        }
+
+    });
+
+    return feedback;
+
 };
-
-
 
 module.exports = {
     generateQuestions,

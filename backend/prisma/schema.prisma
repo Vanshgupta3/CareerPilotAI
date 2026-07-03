@@ -35,16 +35,19 @@ model Resume {
 }
 
 model Interview {
-  id          String      @id @default(cuid())
+  id          String   @id @default(cuid())
+
   role        String
   level       String
-  createdAt   DateTime    @default(now())
+  type        String
+
+  createdAt   DateTime @default(now())
 
   userId      String
   resumeId    String
 
-  user        User        @relation(fields: [userId], references: [id])
-  resume      Resume      @relation(fields: [resumeId], references: [id])
+  user        User @relation(fields: [userId], references: [id])
+  resume      Resume @relation(fields: [resumeId], references: [id])
 
   questions   Question[]
   feedback    Feedback?

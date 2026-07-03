@@ -1,37 +1,29 @@
 const answerService = require("../services/answerService");
 const asyncHandler = require("../utils/asyncHandler");
 
-const submitAnswer = asyncHandler(async (req, res) => {
+const submitAnswers = asyncHandler(async (req, res) => {
 
-    const { questionId, answerText } = req.body;
+    const { answers } = req.body;
 
-    const answer = await answerService.submitAnswer(
-        questionId,
-        answerText
-    );
+    if (!answers || answers.length === 0) {
+
+        const error = new Error("Answers are required.");
+        error.status = 400;
+        throw error;
+
+    }
+
+    const result = await answerService.submitAnswers(answers);
 
     res.status(201).json({
+
         success: true,
-        answer
-    });
+        message: result.message
 
-});
-
-const evaluateAnswer = asyncHandler(async (req, res) => {
-
-    const { answerId } = req.body;
-
-    const evaluation =
-        await answerService.evaluateAnswer(answerId);
-
-    res.status(200).json({
-        success: true,
-        evaluation
     });
 
 });
 
 module.exports = {
-    submitAnswer,
-    evaluateAnswer
+    submitAnswers
 };

@@ -3,20 +3,44 @@ const asyncHandler = require("../utils/asyncHandler");
 
 const generateQuestions = asyncHandler(async (req, res) => {
 
-    const { resumeId } = req.body;
+    const {
+        resumeId,
+        role,
+        level,
+        type,
+        questionCount
+    } = req.body;
 
-    if (!resumeId) {
-        const error = new Error("Resume ID is required.");
+    if (
+        !resumeId ||
+        !role ||
+        !level ||
+        !type ||
+        !questionCount
+    ) {
+
+        const error = new Error("All fields are required.");
         error.status = 400;
         throw error;
+
     }
 
-    const questions =
-        await interviewService.generateQuestions(resumeId);
+    const interview = await interviewService.generateQuestions({
 
-    res.status(200).json({
+        resumeId,
+        role,
+        level,
+        type,
+        questionCount
+
+    });
+
+    res.status(201).json({
+
         success: true,
-        questions
+        message: "Interview created successfully.",
+        interview
+
     });
 
 });
@@ -29,8 +53,10 @@ const getInterviewQuestions = asyncHandler(async (req, res) => {
         await interviewService.getInterviewQuestions(id);
 
     res.status(200).json({
+
         success: true,
         questions
+
     });
 
 });
@@ -39,12 +65,22 @@ const generateInterviewFeedback = asyncHandler(async (req, res) => {
 
     const { interviewId } = req.body;
 
+    if (!interviewId) {
+
+        const error = new Error("Interview ID is required.");
+        error.status = 400;
+        throw error;
+
+    }
+
     const feedback =
         await interviewService.generateInterviewFeedback(interviewId);
 
     res.status(200).json({
+
         success: true,
         feedback
+
     });
 
 });

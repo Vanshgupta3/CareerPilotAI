@@ -8,12 +8,7 @@ const answerController = require("../controllers/answerController");
 router.post(
     "/submit",
     authMiddleware,
-    answerController.submitAnswer
-);
-router.post(
-    "/evaluate",
-    authMiddleware,
-    answerController.evaluateAnswer
+    answerController.submitAnswers
 );
 
 module.exports = router;
