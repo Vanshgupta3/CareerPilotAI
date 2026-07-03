@@ -5,7 +5,8 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import ResumeAnalysis from "./pages/ResumeAnalysis";
-import Interview from "./pages/Interview";
+import InterviewSetup from "./pages/InterviewSetup";
+import InterviewSession from "./pages/InterviewSession";
 import Feedback from "./pages/Feedback";
 import ATSReport from "./pages/ATSReport";
 
@@ -37,7 +38,16 @@ function App() {
     path="/interview"
     element={
         <ProtectedRoute>
-            <Interview />
+            <InterviewSetup />
+        </ProtectedRoute>
+    }
+/>
+
+<Route
+    path="/interview/:id"
+    element={
+        <ProtectedRoute>
+            <InterviewSession />
         </ProtectedRoute>
     }
 />
