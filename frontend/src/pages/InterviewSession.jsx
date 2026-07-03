@@ -7,6 +7,8 @@ import Navbar from "../components/Navbar";
 
 import { useAuth } from "../context/AuthContext";
 
+import useSpeechRecognition from "../hooks/useSpeechRecognition";
+
 import {
     getInterviewQuestions,
     submitAnswers,
@@ -30,6 +32,16 @@ function InterviewSession() {
     const [loading, setLoading] = useState(true);
 
     const [submitting, setSubmitting] = useState(false);
+
+    const {
+
+        transcript,
+        isListening,
+        startListening,
+        stopListening,
+        resetTranscript
+
+    } = useSpeechRecognition();
 
     const fetchQuestions = async () => {
 
@@ -62,17 +74,48 @@ function InterviewSession() {
 
     }, []);
 
+    useEffect(() => {
+
+        const questionId = questions[currentQuestion]?.id;
+
+        if (!questionId || !transcript) return;
+
+        setAnswers((prev) => {
+
+            if (prev[questionId] === transcript) {
+
+                return prev;
+
+            }
+
+            return {
+
+                ...prev,
+
+                [questionId]: transcript
+
+            };
+
+        });
+
+    }, [transcript, currentQuestion, questions]);
+
     const handleFinishInterview = async () => {
+
+        stopListening();
 
         setSubmitting(true);
 
         try {
 
-            const formattedAnswers = Object.entries(answers).map(
+            const formattedAnswers = Object.entries(
+                answers
+            ).map(
 
                 ([questionId, answerText]) => ({
 
                     questionId,
+
                     answerText
 
                 })
@@ -82,6 +125,7 @@ function InterviewSession() {
             await submitAnswers(
 
                 formattedAnswers,
+
                 token
 
             );
@@ -89,11 +133,16 @@ function InterviewSession() {
             await generateInterviewFeedback(
 
                 id,
+
                 token
 
             );
 
-            toast.success("Interview completed successfully.");
+            toast.success(
+
+                "Interview completed successfully."
+
+            );
 
             navigate(`/feedback/${id}`);
 
@@ -162,7 +211,9 @@ function InterviewSession() {
                         className="bg-blue-500 h-3 rounded-full transition-all duration-300"
 
                         style={{
+
                             width: `${((currentQuestion + 1) / questions.length) * 100}%`
+
                         }}
 
                     />
@@ -187,6 +238,62 @@ function InterviewSession() {
 
                     </label>
 
+                    <div className="flex items-center gap-4 mb-4">
+
+                        <button
+
+                            type="button"
+
+                            onClick={
+
+                                isListening
+
+                                    ? stopListening
+
+                                    : startListening
+
+                            }
+
+                            className={`px-4 py-2 rounded-lg text-white transition ${
+
+                                isListening
+
+                                    ? "bg-red-600 hover:bg-red-700"
+
+                                    : "bg-blue-600 hover:bg-blue-700"
+
+                            }`}
+
+                        >
+
+                            {
+
+                                isListening
+
+                                    ? "🛑 Stop Recording"
+
+                                    : "🎤 Start Recording"
+
+                            }
+
+                        </button>
+
+                        {
+
+                            isListening && (
+
+                                <span className="text-red-400 font-medium animate-pulse">
+
+                                    Listening...
+
+                                </span>
+
+                            )
+
+                        }
+
+                    </div>
+
                     <textarea
 
                         rows={8}
@@ -194,7 +301,9 @@ function InterviewSession() {
                         value={
 
                             answers[
+
                                 questions[currentQuestion]?.id
+
                             ] || ""
 
                         }
@@ -206,6 +315,7 @@ function InterviewSession() {
                                 ...answers,
 
                                 [questions[currentQuestion]?.id]:
+
                                     e.target.value
 
                             })
@@ -217,20 +327,25 @@ function InterviewSession() {
                         className="w-full bg-slate-900 border border-slate-700 rounded-xl p-4 text-white resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
 
                     />
-
-                </div>
+                                    </div>
 
                 <div className="flex justify-between mt-8">
 
                     <button
 
-                        disabled={currentQuestion === 0}
+                        disabled={currentQuestion === 0 || isListening}
 
-                        onClick={() =>
-                            setCurrentQuestion((prev) => prev - 1)
-                        }
+                        onClick={() => {
 
-                        className="bg-slate-700 hover:bg-slate-600 disabled:opacity-50 px-6 py-3 rounded-xl text-white"
+                            stopListening();
+
+                            resetTranscript();
+
+                            setCurrentQuestion((prev) => prev - 1);
+
+                        }}
+
+                        className="bg-slate-700 hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed px-6 py-3 rounded-xl text-white transition"
 
                     >
 
@@ -238,47 +353,59 @@ function InterviewSession() {
 
                     </button>
 
-                    {currentQuestion === questions.length - 1 ? (
+                    {
 
-                        <button
+                        currentQuestion === questions.length - 1 ? (
 
-                            onClick={handleFinishInterview}
+                            <button
 
-                            disabled={submitting}
+                                onClick={handleFinishInterview}
 
-                            className="bg-green-600 hover:bg-green-700 disabled:bg-green-800 px-6 py-3 rounded-xl text-white"
+                                disabled={submitting || isListening}
 
-                        >
+                                className="bg-green-600 hover:bg-green-700 disabled:bg-green-800 disabled:cursor-not-allowed px-6 py-3 rounded-xl text-white transition"
 
-                            {
+                            >
 
-                                submitting
+                                {
 
-                                    ? "Generating Feedback..."
+                                    submitting
 
-                                    : "Finish Interview"
+                                        ? "Generating Feedback..."
 
-                            }
+                                        : "Finish Interview"
 
-                        </button>
+                                }
 
-                    ) : (
+                            </button>
 
-                        <button
+                        ) : (
 
-                            onClick={() =>
-                                setCurrentQuestion((prev) => prev + 1)
-                            }
+                            <button
 
-                            className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-xl text-white"
+                                disabled={isListening}
 
-                        >
+                                onClick={() => {
 
-                            Next
+                                    stopListening();
 
-                        </button>
+                                    resetTranscript();
 
-                    )}
+                                    setCurrentQuestion((prev) => prev + 1);
+
+                                }}
+
+                                className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed px-6 py-3 rounded-xl text-white transition"
+
+                            >
+
+                                Next
+
+                            </button>
+
+                        )
+
+                    }
 
                 </div>
 
