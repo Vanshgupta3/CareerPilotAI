@@ -27,12 +27,12 @@ const login = asyncHandler(async (req, res) => {
 
 const getProfile = asyncHandler(async (req, res) => {
 
-    const result = await authService.getProfile(req.user.id);
+    const profile = await authService.getProfile(req.user.id);
 
     res.status(200).json({
         success: true,
         message: "Profile fetched successfully",
-        ...result
+        ...profile
     });
 
 });

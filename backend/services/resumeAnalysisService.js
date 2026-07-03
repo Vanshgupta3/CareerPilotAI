@@ -144,6 +144,22 @@ Example:
   "grammarScore": 92,
   "formatScore": 88
 }
+  
+
+Evaluate this resume using fixed scoring criteria.
+
+The same resume should always receive approximately the same ATS score.
+
+Use these weights:
+- Formatting: 20%
+- Grammar: 15%
+- Skills: 30%
+- Experience: 20%
+- ATS Keywords: 15%
+
+Be consistent. Do not vary the score unless the resume changes.
+
+Return ONLY JSON.
 
 Resume:
 

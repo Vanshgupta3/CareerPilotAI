@@ -111,12 +111,14 @@ const getProfile = async (userId) => {
             resumes: {
 
                 orderBy: {
-
                     uploadedAt: "desc"
-
                 },
 
-                take: 1
+                take: 1,
+
+                include: {
+                    analysis: true
+                }
 
             }
 
@@ -132,6 +134,8 @@ const getProfile = async (userId) => {
 
     }
 
+    const latestResume = user.resumes[0] || null;
+
     return {
 
         user: {
@@ -142,7 +146,9 @@ const getProfile = async (userId) => {
 
         },
 
-        resume: user.resumes[0] || null
+        resume: latestResume,
+
+        analysis: latestResume?.analysis || null
 
     };
 
