@@ -26,21 +26,17 @@ const generateQuestions = asyncHandler(async (req, res) => {
     }
 
     const interview = await interviewService.generateQuestions({
-
         resumeId,
         role,
         level,
         type,
         questionCount
-
     });
 
     res.status(201).json({
-
         success: true,
         message: "Interview created successfully.",
         interview
-
     });
 
 });
@@ -53,10 +49,8 @@ const getInterviewQuestions = asyncHandler(async (req, res) => {
         await interviewService.getInterviewQuestions(id);
 
     res.status(200).json({
-
         success: true,
         questions
-
     });
 
 });
@@ -77,16 +71,41 @@ const generateInterviewFeedback = asyncHandler(async (req, res) => {
         await interviewService.generateInterviewFeedback(interviewId);
 
     res.status(200).json({
-
         success: true,
         feedback
-
     });
 
 });
 
+const getInterviewFeedback = asyncHandler(async (req, res) => {
+
+    const { interviewId } = req.params;
+
+    const feedback =
+        await interviewService.getInterviewFeedback(interviewId);
+
+    res.status(200).json({
+        success: true,
+        feedback
+    });
+
+});
+const getLatestFeedback = asyncHandler(async (req, res) => {
+
+    const result = await interviewService.getLatestFeedback(
+        req.user.id
+    );
+
+    res.status(200).json({
+        success: true,
+        ...result
+    });
+
+});
 module.exports = {
     generateQuestions,
     getInterviewQuestions,
-    generateInterviewFeedback
+    generateInterviewFeedback,
+    getInterviewFeedback,
+    getLatestFeedback
 };

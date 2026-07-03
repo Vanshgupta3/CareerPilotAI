@@ -73,16 +73,23 @@ model Answer {
 }
 
 model Feedback {
-  id            String      @id @default(cuid())
-  overallScore  Float
-  strengths     String
-  weaknesses    String
-  suggestions   String
+  id                    String   @id @default(cuid())
 
-  interviewId   String      @unique
-  interview     Interview   @relation(fields: [interviewId], references: [id])
+  overallScore          Float
+
+  technicalScore        Float
+  communicationScore    Float
+  confidenceScore       Float
+  problemSolvingScore   Float
+
+  strengths             String
+  weaknesses            String
+  suggestions           String
+  summary               String
+
+  interviewId           String   @unique
+  interview             Interview @relation(fields: [interviewId], references: [id])
 }
-
 model ResumeAnalysis {
   id                String   @id @default(cuid())
 
