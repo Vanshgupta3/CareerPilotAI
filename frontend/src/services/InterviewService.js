@@ -146,3 +146,24 @@ export const getLatestFeedback = async (token) => {
     return response.data;
 
 };
+export const getInterviewHistory = async (token) => {
+
+    const response = await axios.get(
+
+        `${INTERVIEW_API}/history`,
+
+        {
+
+            headers: {
+
+                Authorization: `Bearer ${token}`
+
+            }
+
+        }
+
+    );
+
+    return response.data;
+
+};

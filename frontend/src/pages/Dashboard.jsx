@@ -251,11 +251,11 @@ function Dashboard() {
                     />
 
                     <DashboardCard
-                        title="Interview Feedback"
-                        description="Review your interview history and analyze your performance over time."
-                        buttonText="View Feedback"
-                        link="/feedback"
-                    />
+    title="Interview History"
+    description="View all your previous interviews and feedback."
+    buttonText="View History"
+    link="/history"
+/>
 
                     <DashboardCard
                         title="Career Progress"

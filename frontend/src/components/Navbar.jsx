@@ -79,6 +79,12 @@ function Navbar() {
                     >
                         Feedback
                     </button>
+                    <Link
+    to="/history"
+    className="text-slate-300 hover:text-white"
+>
+    History
+</Link>
 
                     <button
                         onClick={handleLogout}

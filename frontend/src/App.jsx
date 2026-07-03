@@ -9,6 +9,7 @@ import InterviewSetup from "./pages/InterviewSetup";
 import InterviewSession from "./pages/InterviewSession";
 import Feedback from "./pages/Feedback";
 import ATSReport from "./pages/ATSReport";
+import InterviewHistory from "./pages/InterviewHistory";
 
 function App() {
   return (
@@ -64,6 +65,14 @@ function App() {
     element={
         <ProtectedRoute>
             <Feedback />
+        </ProtectedRoute>
+    }
+/>
+<Route
+    path="/history"
+    element={
+        <ProtectedRoute>
+            <InterviewHistory />
         </ProtectedRoute>
     }
 />
