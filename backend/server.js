@@ -12,6 +12,9 @@ const answerRoutes = require("./routes/answerRoutes");
 const resumeAnalysisRoutes = require("./routes/resumeAnalysisRoutes");
 const dashboardRoutes =
     require("./routes/dashboardRoutes");
+const liveInterviewRoutes =
+    require("./routes/liveInterviewRoutes");
+
 const errorMiddleware = require("./middlewares/errorMiddleware");
 
 const app = express();
@@ -30,6 +33,7 @@ app.use(
     "/uploads",
     express.static(path.join(__dirname, "uploads"))
 );
+
 app.use("/", homeRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
@@ -38,6 +42,7 @@ app.use("/api/interview", interviewRoutes);
 app.use("/api/answer", answerRoutes);
 app.use("/api/resume-analysis", resumeAnalysisRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/live-interview", liveInterviewRoutes);
 
 app.use(errorMiddleware);
 

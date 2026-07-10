@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -9,104 +8,109 @@ datasource db {
 }
 
 model User {
-  id          String      @id @default(cuid())
-  name        String
-  email       String      @unique
-  password    String
-  createdAt   DateTime    @default(now())
-
-  resumes     Resume[]
-  interviews  Interview[]
+  id         String      @id @default(cuid())
+  name       String
+  email      String      @unique
+  password   String
+  createdAt  DateTime    @default(now())
+  interviews Interview[]
+  resumes    Resume[]
 }
 
-
 model Resume {
-  id          String   @id @default(cuid())
-  title       String
-  fileUrl     String
-  content     String?          // <-- NEW
-  uploadedAt  DateTime @default(now())
-
-  userId      String
-  user        User @relation(fields: [userId], references: [id])
-
-  interviews  Interview[]
-  analysis ResumeAnalysis?
+  id         String          @id @default(cuid())
+  title      String
+  fileUrl    String
+  uploadedAt DateTime        @default(now())
+  userId     String
+  content    String?
+  interviews Interview[]
+  user       User            @relation(fields: [userId], references: [id])
+  analysis   ResumeAnalysis?
 }
 
 model Interview {
-  id          String   @id @default(cuid())
+  id                String   @id @default(cuid())
+  role              String
+  level             String
+  createdAt         DateTime @default(now())
+  userId            String
+  resumeId          String
+  type              String
+  mode              String   @default("NORMAL")
+  status            String   @default("CREATED")
+  currentTopic      String?
+  currentDifficulty String?
+  startedAt         DateTime?
+  endedAt           DateTime?
 
-  role        String
-  level       String
-  type        String
-
-  createdAt   DateTime @default(now())
-
-  userId      String
-  resumeId    String
-
-  user        User @relation(fields: [userId], references: [id])
-  resume      Resume @relation(fields: [resumeId], references: [id])
-
-  questions   Question[]
-  feedback    Feedback?
+  feedback  Feedback?
+  resume    Resume             @relation(fields: [resumeId], references: [id])
+  user      User               @relation(fields: [userId], references: [id])
+  questions Question[]
+  messages  InterviewMessage[]
 }
 
 model Question {
-  id            String      @id @default(cuid())
-  questionText  String
+  id           String @id @default(cuid())
+  questionText String
+  interviewId  String
 
-  interviewId   String
-  interview     Interview   @relation(fields: [interviewId], references: [id])
-
-  answers       Answer[]
+  answers   Answer[]
+  interview Interview @relation(fields: [interviewId], references: [id])
 }
 
 model Answer {
-  id            String      @id @default(cuid())
-  answerText    String
-  score         Float?
+  id         String @id @default(cuid())
+  answerText String
+  score      Float?
+  questionId String
 
-  questionId    String
-  question      Question    @relation(fields: [questionId], references: [id])
+  question Question @relation(fields: [questionId], references: [id])
+}
+
+model InterviewMessage {
+  id          String   @id @default(cuid())
+  role        String
+  content     String
+  messageType String   @default("MESSAGE")
+  topic       String?
+  difficulty  String?
+  createdAt   DateTime @default(now())
+  interviewId String
+
+  interview Interview @relation(fields: [interviewId], references: [id])
 }
 
 model Feedback {
-  id                    String   @id @default(cuid())
+  id                  String @id @default(cuid())
+  overallScore        Float
+  strengths           String
+  weaknesses          String
+  suggestions         String
+  interviewId         String @unique
+  communicationScore  Float
+  confidenceScore     Float
+  problemSolvingScore Float
+  summary             String
+  technicalScore      Float
 
-  overallScore          Float
-
-  technicalScore        Float
-  communicationScore    Float
-  confidenceScore       Float
-  problemSolvingScore   Float
-
-  strengths             String
-  weaknesses            String
-  suggestions           String
-  summary               String
-
-  interviewId           String   @unique
-  interview             Interview @relation(fields: [interviewId], references: [id])
+  interview Interview @relation(fields: [interviewId], references: [id])
 }
+
 model ResumeAnalysis {
-  id                String   @id @default(cuid())
+  id              String   @id @default(cuid())
+  atsScore        Float
+  summary         String
+  strengths       String
+  weaknesses      String
+  suggestions     String
+  createdAt       DateTime @default(now())
+  resumeId        String   @unique
+  formatScore     Float?
+  grammarScore    Float?
+  missingKeywords Json
+  skills          Json
 
-  atsScore          Float
-  summary           String
-
-  strengths         String
-  weaknesses        String
-  suggestions       String
-
-  skills            Json
-  missingKeywords   Json
-  grammarScore      Float?
-  formatScore       Float?
-
-  createdAt         DateTime @default(now())
-
-  resumeId          String   @unique
-  resume            Resume   @relation(fields: [resumeId], references: [id])
+  resume Resume @relation(fields: [resumeId], references: [id])
 }
