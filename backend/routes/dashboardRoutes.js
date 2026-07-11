@@ -12,5 +12,9 @@ router.get(
     authMiddleware,
     dashboardController.getDashboardStats
 );
-
+router.get(
+    "/analytics",
+    authMiddleware,
+    dashboardController.getDashboardAnalytics
+);
 module.exports = router;

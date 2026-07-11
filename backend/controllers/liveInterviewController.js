@@ -69,25 +69,112 @@ const submitLiveAnswer = asyncHandler(async (req, res) => {
     });
 
 });
+const generateQuestionReviews = asyncHandler(async (req, res) => {
+
+    const { interviewId } = req.params;
+
+    const reviews =
+        await liveInterviewService.generateQuestionReviews({
+
+            interviewId,
+
+            userId: req.user.id
+
+        });
+
+    res.status(200).json({
+
+        success: true,
+
+        reviews
+
+    });
+
+});
+const getQuestionReviews = asyncHandler(async (req, res) => {
+
+    const { interviewId } = req.params;
+
+    const reviews =
+        await liveInterviewService.getQuestionReviews({
+
+            interviewId,
+
+            userId: req.user.id
+
+        });
+
+    res.status(200).json({
+
+        success: true,
+
+        reviews
+
+    });
+
+});
 const generateLiveInterviewFeedback = asyncHandler(async (req, res) => {
 
     const { interviewId } = req.params;
 
-    const feedback =
-        await liveInterviewService.generateLiveInterviewFeedback({
+    const result =
+    await liveInterviewService.generateLiveInterviewFeedback({
+        interviewId,
+        userId: req.user.id
+    });
+
+res.status(200).json({
+    success: true,
+    message: "Live interview feedback generated successfully.",
+    feedback: result.feedback,
+    reviews: result.reviews
+});
+
+});
+const getLiveInterviewHistory = asyncHandler(async (req, res) => {
+
+    const interviews =
+        await liveInterviewService.getLiveInterviewHistory(
+            req.user.id
+        );
+
+    res.status(200).json({
+
+        success: true,
+
+        interviews
+
+    });
+
+});
+const getLiveInterviewById = asyncHandler(async (req, res) => {
+
+    const { interviewId } = req.params;
+
+    const interview =
+        await liveInterviewService.getLiveInterviewById({
+
             interviewId,
+
             userId: req.user.id
+
         });
 
     res.status(200).json({
+
         success: true,
-        message: "Live interview feedback generated successfully.",
-        feedback
+
+        interview
+
     });
 
 });
 module.exports = {
     startLiveInterview,
     submitLiveAnswer,
-    generateLiveInterviewFeedback
+    generateLiveInterviewFeedback,
+    generateQuestionReviews,
+    getQuestionReviews,
+    getLiveInterviewHistory,
+    getLiveInterviewById
 };

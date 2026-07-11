@@ -527,6 +527,205 @@ Rules:
     };
 
 };
+
+const generateQuestionReviews = async ({
+    interviewId,
+    userId
+}) => {
+
+    const interview = await prisma.interview.findFirst({
+
+        where: {
+            id: interviewId,
+            userId,
+            mode: "LIVE"
+        },
+
+        include: {
+
+            messages: {
+
+                orderBy: {
+                    createdAt: "asc"
+                }
+
+            }
+
+        }
+
+    });
+
+    if (!interview) {
+
+        const error = new Error("Interview not found.");
+        error.status = 404;
+        throw error;
+
+    }
+
+    // Return cached reviews if they already exist
+    const existingReviews = await prisma.questionReview.findMany({
+
+        where: {
+            interviewId: interview.id
+        },
+
+        include: {
+            questionMessage: true
+        },
+
+        orderBy: {
+            createdAt: "asc"
+        }
+
+    });
+
+    if (existingReviews.length > 0) {
+
+        return existingReviews.map((review) => ({
+
+            questionMessageId: review.questionMessageId,
+
+            question: review.questionMessage.content,
+
+            candidateAnswer: review.candidateAnswer,
+
+            idealAnswer: review.idealAnswer,
+
+            explanation: review.explanation,
+
+            score: review.score
+
+        }));
+
+    }
+
+    const reviews = [];
+
+    for (let i = 0; i < interview.messages.length; i++) {
+
+        const message = interview.messages[i];
+
+        if (
+            message.role !== "AI" ||
+            message.messageType !== "QUESTION"
+        ) {
+            continue;
+        }
+
+        const next = interview.messages[i + 1];
+
+        const candidateAnswer =
+            next &&
+            next.role === "USER"
+                ? next.content
+                : "No answer provided.";
+
+        const prompt = `
+You are a Senior Technical Interviewer.
+
+Evaluate ONLY this single interview question.
+
+Question:
+${message.content}
+
+Candidate Answer:
+${candidateAnswer}
+
+Return ONLY valid JSON.
+
+{
+    "score": 8,
+    "idealAnswer": "Write the ideal answer.",
+    "explanation": "Explain what the candidate did well and what they missed."
+}
+
+Rules:
+- score must be between 0 and 10.
+- idealAnswer should be concise (maximum 150 words).
+- explanation should be concise (maximum 100 words).
+- Return ONLY JSON.
+`;
+
+        const result = await model.generateContent(prompt);
+
+        const response = result.response.text();
+
+        const cleanedResponse = response
+            .replace(/```json/g, "")
+            .replace(/```/g, "")
+            .trim();
+
+        let review;
+
+        try {
+
+            review = JSON.parse(cleanedResponse);
+
+        } catch {
+
+            throw new Error(
+                "Invalid review received from Gemini."
+            );
+
+        }
+
+        if (
+            typeof review.score !== "number" ||
+            review.score < 0 ||
+            review.score > 10 ||
+            !review.idealAnswer ||
+            !review.explanation
+        ) {
+
+            throw new Error(
+                "Incomplete review received from Gemini."
+            );
+
+        }
+
+        await prisma.questionReview.create({
+
+            data: {
+
+                interviewId: interview.id,
+
+                questionMessageId: message.id,
+
+                candidateAnswer,
+
+                idealAnswer: review.idealAnswer,
+
+                explanation: review.explanation,
+
+                score: review.score
+
+            }
+
+        });
+
+        reviews.push({
+
+            questionMessageId: message.id,
+
+            question: message.content,
+
+            candidateAnswer,
+
+            idealAnswer: review.idealAnswer,
+
+            explanation: review.explanation,
+
+            score: review.score
+
+        });
+
+    }
+
+    return reviews;
+
+};
+
 const generateLiveInterviewFeedback = async ({
     interviewId,
     userId
@@ -708,12 +907,247 @@ Rules:
             }
         });
 
-    return savedFeedback;
+    const reviews =
+    await generateQuestionReviews({
+
+        interviewId,
+
+        userId
+
+    });
+
+return {
+
+    feedback: savedFeedback,
+
+    reviews
+
+};
 };
 
+const getQuestionReviews = async ({
+    interviewId,
+    userId
+}) => {
 
+    const interview = await prisma.interview.findFirst({
+
+        where: {
+            id: interviewId,
+            userId,
+            mode: "LIVE"
+        }
+
+    });
+
+    if (!interview) {
+
+        const error = new Error("Interview not found.");
+        error.status = 404;
+        throw error;
+
+    }
+
+    const reviews = await prisma.questionReview.findMany({
+
+        where: {
+            interviewId: interview.id
+        },
+
+        include: {
+
+            questionMessage: true
+
+        },
+
+        orderBy: {
+
+            createdAt: "asc"
+
+        }
+
+    });
+
+    return reviews.map((review) => ({
+
+        questionMessageId: review.questionMessageId,
+
+        question: review.questionMessage.content,
+
+        candidateAnswer: review.candidateAnswer,
+
+        idealAnswer: review.idealAnswer,
+
+        explanation: review.explanation,
+
+        score: review.score
+
+    }));
+
+};
+const getLiveInterviewHistory = async (userId) => {
+
+    const interviews = await prisma.interview.findMany({
+
+        where: {
+            userId,
+            mode: "LIVE",
+            status: "COMPLETED"
+        },
+
+        include: {
+
+            feedback: {
+
+                select: {
+
+                    overallScore: true
+
+                }
+
+            }
+
+        },
+
+        orderBy: {
+
+            endedAt: "desc"
+
+        }
+
+    });
+
+    return interviews.map((interview) => ({
+
+        interviewId: interview.id,
+
+        role: interview.role,
+
+        level: interview.level,
+
+        type: interview.type,
+
+        status: interview.status,
+
+        overallScore:
+            interview.feedback?.overallScore ?? null,
+
+        createdAt: interview.createdAt,
+
+        startedAt: interview.startedAt,
+
+        endedAt: interview.endedAt
+
+    }));
+
+};
+const getLiveInterviewById = async ({
+    interviewId,
+    userId
+}) => {
+
+    const interview = await prisma.interview.findFirst({
+
+        where: {
+            id: interviewId,
+            userId,
+            mode: "LIVE"
+        },
+
+        include: {
+
+            feedback: true,
+
+            messages: {
+
+                orderBy: {
+                    createdAt: "asc"
+                }
+
+            },
+
+            reviews: {
+
+                include: {
+                    questionMessage: true
+                },
+
+                orderBy: {
+                    createdAt: "asc"
+                }
+
+            }
+
+        }
+
+    });
+
+    if (!interview) {
+
+        const error = new Error("Interview not found.");
+        error.status = 404;
+        throw error;
+
+    }
+
+    const duration =
+        interview.startedAt && interview.endedAt
+            ? Math.floor(
+                  (interview.endedAt.getTime() -
+                      interview.startedAt.getTime()) /
+                      1000
+              )
+            : null;
+
+    return {
+
+        interviewId: interview.id,
+
+        role: interview.role,
+
+        level: interview.level,
+
+        type: interview.type,
+
+        status: interview.status,
+
+        createdAt: interview.createdAt,
+
+        startedAt: interview.startedAt,
+
+        endedAt: interview.endedAt,
+
+        duration,
+
+        feedback: interview.feedback,
+
+        messages: interview.messages,
+
+        reviews: interview.reviews.map((review) => ({
+
+            questionMessageId: review.questionMessageId,
+
+            question: review.questionMessage.content,
+
+            candidateAnswer: review.candidateAnswer,
+
+            idealAnswer: review.idealAnswer,
+
+            explanation: review.explanation,
+
+            score: review.score
+
+        }))
+
+    };
+
+};
 module.exports = {
     startLiveInterview,
     submitLiveAnswer,
-    generateLiveInterviewFeedback
+    generateLiveInterviewFeedback,
+    generateQuestionReviews,
+    getQuestionReviews,
+    getLiveInterviewHistory,
+    getLiveInterviewById
 };

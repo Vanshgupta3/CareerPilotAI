@@ -12,6 +12,18 @@ const getDashboardStats = async (userId) => {
             }
 
         });
+        const liveInterviews =
+    await prisma.interview.count({
+
+        where: {
+
+            userId,
+
+            mode: "LIVE"
+
+        }
+
+    });
 
     const completedInterviews =
         await prisma.feedback.count({
@@ -94,26 +106,216 @@ const getDashboardStats = async (userId) => {
             }
 
         });
+const latestInterview =
+    await prisma.interview.findFirst({
+
+        where: {
+
+            userId
+
+        },
+
+        include: {
+
+            feedback: {
+
+                select: {
+
+                    overallScore: true
+
+                }
+
+            }
+
+        },
+
+        orderBy: {
+
+            endedAt: "desc"
+
+        }
+
+    });
+    const recentInterviews =
+    await prisma.interview.findMany({
+
+        where: {
+
+            userId
+
+        },
+
+        include: {
+
+            feedback: {
+
+                select: {
+
+                    overallScore: true
+
+                }
+
+            }
+
+        },
+
+        orderBy: {
+
+            endedAt: "desc"
+
+        },
+
+        take: 5
+
+    });
+    return {
+
+    totalInterviews,
+
+    liveInterviews,
+
+    completedInterviews,
+
+    averageScore,
+
+    highestScore,
+
+    atsScore:
+        latestResume?.analysis?.atsScore || 0,
+
+    latestInterview,
+
+    recentInterviews
+
+};
+
+};
+const getDashboardAnalytics = async (userId) => {
+
+    const feedbacks = await prisma.feedback.findMany({
+
+        where: {
+
+            interview: {
+
+                userId
+
+            }
+
+        },
+
+        include: {
+
+            interview: {
+
+                select: {
+
+                    createdAt: true
+
+                }
+
+            }
+
+        },
+
+        orderBy: {
+
+            interview: {
+
+                createdAt: "asc"
+
+            }
+
+        }
+
+    });
+
+    const latestResume = await prisma.resume.findFirst({
+
+        where: {
+
+            userId
+
+        },
+
+        include: {
+
+            analysis: true
+
+        },
+
+        orderBy: {
+
+            uploadedAt: "desc"
+
+        }
+
+    });
+
+    const average = (field) => {
+
+        if (feedbacks.length === 0) return 0;
+
+        return Number(
+
+            (
+                feedbacks.reduce(
+
+                    (sum, item) => sum + item[field],
+
+                    0
+
+                ) / feedbacks.length
+
+            ).toFixed(1)
+
+        );
+
+    };
+
+    const scoreHistory = feedbacks.map((item) => ({
+
+        date: item.interview.createdAt,
+
+        overallScore: item.overallScore
+
+    }));
 
     return {
 
-        totalInterviews,
+        overallAverage: average("overallScore"),
 
-        completedInterviews,
+        technicalAverage: average("technicalScore"),
 
-        averageScore,
+        communicationAverage: average("communicationScore"),
 
-        highestScore,
+        confidenceAverage: average("confidenceScore"),
 
-        atsScore:
-            latestResume?.analysis?.atsScore || 0
+        problemSolvingAverage: average("problemSolvingScore"),
+
+        bestScore:
+            feedbacks.length
+                ? Math.max(...feedbacks.map(f => f.overallScore))
+                : 0,
+
+        latestScore:
+            feedbacks.length
+                ? feedbacks[feedbacks.length - 1].overallScore
+                : 0,
+
+        totalInterviews: feedbacks.length,
+
+        resumeATS:
+            latestResume?.analysis?.atsScore ?? 0,
+
+        scoreHistory
 
     };
 
 };
-
 module.exports = {
 
-    getDashboardStats
+    getDashboardStats,
+    getDashboardAnalytics
 
 };

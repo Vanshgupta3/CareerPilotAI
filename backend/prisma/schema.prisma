@@ -30,72 +30,69 @@ model Resume {
 }
 
 model Interview {
-  id                String   @id @default(cuid())
+  id                String             @id @default(cuid())
   role              String
   level             String
-  createdAt         DateTime @default(now())
+  createdAt         DateTime           @default(now())
   userId            String
   resumeId          String
   type              String
-  mode              String   @default("NORMAL")
-  status            String   @default("CREATED")
-  currentTopic      String?
   currentDifficulty String?
-  startedAt         DateTime?
+  currentTopic      String?
   endedAt           DateTime?
-
-  feedback  Feedback?
-  resume    Resume             @relation(fields: [resumeId], references: [id])
-  user      User               @relation(fields: [userId], references: [id])
-  questions Question[]
-  messages  InterviewMessage[]
+  mode              String             @default("NORMAL")
+  startedAt         DateTime?
+  status            String             @default("CREATED")
+  feedback          Feedback?
+  resume            Resume             @relation(fields: [resumeId], references: [id])
+  user              User               @relation(fields: [userId], references: [id])
+  messages          InterviewMessage[]
+  questions         Question[]
+  reviews           QuestionReview[]
 }
 
 model Question {
-  id           String @id @default(cuid())
+  id           String    @id @default(cuid())
   questionText String
   interviewId  String
-
-  answers   Answer[]
-  interview Interview @relation(fields: [interviewId], references: [id])
+  answers      Answer[]
+  interview    Interview @relation(fields: [interviewId], references: [id])
 }
 
 model Answer {
-  id         String @id @default(cuid())
+  id         String   @id @default(cuid())
   answerText String
   score      Float?
   questionId String
-
-  question Question @relation(fields: [questionId], references: [id])
+  question   Question @relation(fields: [questionId], references: [id])
 }
 
 model InterviewMessage {
-  id          String   @id @default(cuid())
+  id          String          @id @default(cuid())
   role        String
   content     String
-  messageType String   @default("MESSAGE")
+  messageType String          @default("MESSAGE")
   topic       String?
   difficulty  String?
-  createdAt   DateTime @default(now())
+  createdAt   DateTime        @default(now())
   interviewId String
-
-  interview Interview @relation(fields: [interviewId], references: [id])
+  interview   Interview       @relation(fields: [interviewId], references: [id])
+  reviews     QuestionReview?
 }
 
 model Feedback {
-  id                  String @id @default(cuid())
+  id                  String    @id @default(cuid())
   overallScore        Float
   strengths           String
   weaknesses          String
   suggestions         String
-  interviewId         String @unique
+  interviewId         String    @unique
   communicationScore  Float
   confidenceScore     Float
   problemSolvingScore Float
   summary             String
   technicalScore      Float
-
-  interview Interview @relation(fields: [interviewId], references: [id])
+  interview           Interview @relation(fields: [interviewId], references: [id])
 }
 
 model ResumeAnalysis {
@@ -111,6 +108,18 @@ model ResumeAnalysis {
   grammarScore    Float?
   missingKeywords Json
   skills          Json
+  resume          Resume   @relation(fields: [resumeId], references: [id])
+}
 
-  resume Resume @relation(fields: [resumeId], references: [id])
+model QuestionReview {
+  id                String           @id @default(cuid())
+  interviewId       String
+  questionMessageId String           @unique
+  candidateAnswer   String
+  idealAnswer       String
+  explanation       String
+  score             Float
+  createdAt         DateTime         @default(now())
+  interview         Interview        @relation(fields: [interviewId], references: [id])
+  questionMessage   InterviewMessage @relation(fields: [questionMessageId], references: [id])
 }

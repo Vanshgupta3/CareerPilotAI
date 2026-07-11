@@ -28,6 +28,8 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
 const path = require("path");
+const reportRoutes =
+    require("./routes/reportRoutes");
 
 app.use(
     "/uploads",
@@ -43,6 +45,7 @@ app.use("/api/answer", answerRoutes);
 app.use("/api/resume-analysis", resumeAnalysisRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/live-interview", liveInterviewRoutes);
+app.use("/api/report", reportRoutes);
 
 app.use(errorMiddleware);
 
