@@ -1,6 +1,23 @@
 const prisma = require("../prisma/prismaClient");
 const model = require("./geminiService");
 
+const createContinuationFallback = (interview, questionCount) => {
+    const topic = interview.currentTopic || "core technical concepts";
+    const difficulty = questionCount <= 2
+        ? "EASY"
+        : questionCount <= 5
+            ? "MEDIUM"
+            : "HARD";
+
+    return {
+        action: "NEXT_QUESTION",
+        topic,
+        difficulty,
+        question: `Let's continue with ${topic}. Can you explain how you would apply it in a real ${interview.role} project?`,
+        reason: "Fallback continuation to complete the minimum interview length."
+    };
+};
+
 const startLiveInterview = async ({
     resumeId,
     role,
@@ -410,9 +427,7 @@ Rules:
     try {
         decision = JSON.parse(cleanedResponse);
     } catch (error) {
-        throw new Error(
-            "Invalid live interview decision received from Gemini."
-        );
+        decision = createContinuationFallback(interview, questionCount);
     }
 
 
@@ -430,11 +445,7 @@ Rules:
 
 
     if (!allowedActions.includes(decision.action)) {
-
-        throw new Error(
-            "Invalid live interview action received from Gemini."
-        );
-
+        decision = createContinuationFallback(interview, questionCount);
     }
 
 
@@ -443,9 +454,7 @@ Rules:
         !canEndInterview
     ) {
 
-        throw new Error(
-            "Gemini attempted to end the interview too early."
-        );
+        decision = createContinuationFallback(interview, questionCount);
 
     }
 
@@ -461,9 +470,7 @@ Rules:
         )
     ) {
 
-        throw new Error(
-            "Incomplete live interview decision received from Gemini."
-        );
+        decision = createContinuationFallback(interview, questionCount);
 
     }
 
