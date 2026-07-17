@@ -7,7 +7,7 @@ import { useAuth } from "../context/AuthContext";
 import {
     downloadInterviewReport,
     getInterviewFeedback
-} from "../services/interviewService";
+} from "../services/InterviewService";
 
 import {
     CircularProgressbar,

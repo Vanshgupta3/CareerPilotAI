@@ -13,7 +13,7 @@ import {
     getInterviewQuestions,
     submitAnswers,
     generateInterviewFeedback
-} from "../services/interviewService";
+} from "../services/InterviewService";
 
 function InterviewSession() {
 

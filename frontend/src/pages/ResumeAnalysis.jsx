@@ -8,7 +8,7 @@ import CurrentResumeCard from "../components/CurrentResumeCard";
 
 
 import { useAuth } from "../context/AuthContext";
-import { getProfile } from "../services/authService";
+import { getProfile } from "../services/AuthService";
 import {
     uploadResume,
     analyzeResume

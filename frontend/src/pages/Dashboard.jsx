@@ -6,7 +6,7 @@ import DashboardCard from "../components/DashboardCard";
 //import { useEffect, useState } from "react";
 import { getDashboardStats } from "../services/dashboardService";
 import { useAuth } from "../context/AuthContext";
-import { getProfile } from "../services/authService";
+import { getProfile } from "../services/AuthService";
 
 function Dashboard() {
 

@@ -6,8 +6,8 @@ import Navbar from "../components/Navbar";
 
 import { useAuth } from "../context/AuthContext";
 
-import { getProfile } from "../services/authService";
-import { startInterview } from "../services/interviewService";
+import { getProfile } from "../services/AuthService";
+import { startInterview } from "../services/InterviewService";
 import { startLiveInterview } from "../services/liveInterviewService";
 
 function InterviewSetup() {

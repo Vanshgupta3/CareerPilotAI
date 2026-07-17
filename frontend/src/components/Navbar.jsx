@@ -3,7 +3,7 @@ import toast from "react-hot-toast";
 
 import { useAuth } from "../context/AuthContext";
 
-import { getLatestFeedback } from "../services/interviewService";
+import { getLatestFeedback } from "../services/InterviewService";
 
 function Navbar() {
 

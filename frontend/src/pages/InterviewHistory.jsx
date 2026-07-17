@@ -7,7 +7,7 @@ import { useAuth } from "../context/AuthContext";
 
 import {
     getInterviewHistory
-} from "../services/interviewService";
+} from "../services/InterviewService";
 
 function InterviewHistory() {
 
