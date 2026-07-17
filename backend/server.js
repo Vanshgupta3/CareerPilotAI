@@ -9,7 +9,7 @@ const authRoutes = require("./routes/authRoutes");
 const resumeRoutes = require("./routes/resumeRoutes");
 const interviewRoutes = require("./routes/interviewRoutes");
 const answerRoutes = require("./routes/answerRoutes");
-const resumeAnalysisRoutes = require("./routes/resumeAnalysisRoutes");
+const resumeAnalysisRoutes = require("./routes/resumeAnalysisROutes");
 const dashboardRoutes =
     require("./routes/dashboardRoutes");
 const liveInterviewRoutes =
