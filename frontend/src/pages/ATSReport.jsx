@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 
-import ScoreCard from "../components/ats/ScoreCard";
+import ScoreCard from "../components/ats/Scorecard";
 import MetricCard from "../components/ats/MetricCard";
 import SummaryCard from "../components/ats/SummaryCard";
 import SkillsCard from "../components/ats/SkillsCard";

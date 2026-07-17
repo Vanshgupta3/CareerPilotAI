@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
 import Navbar from "../components/Navbar";
-import UploadBox from "../components/UploadBox";
+import UploadBox from "../components/uploadBox";
 import CurrentResumeCard from "../components/CurrentResumeCard";
 
 
