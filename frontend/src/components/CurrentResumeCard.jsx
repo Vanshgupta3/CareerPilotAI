@@ -12,8 +12,11 @@ function CurrentResumeCard({
 
     const navigate = useNavigate();
 
+    const serverUrl = (import.meta.env.VITE_API_URL || "http://localhost:5000/api")
+        .replace(/\/api\/?$/, "");
+
     const resumeUrl =
-        `http://localhost:5000/${resume.fileUrl.replace(/\\/g, "/")}`;
+        `${serverUrl}/${resume.fileUrl.replace(/\\/g, "/")}`;
 
     return (
 

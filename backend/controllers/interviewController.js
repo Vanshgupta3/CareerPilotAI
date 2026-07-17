@@ -81,12 +81,12 @@ const getInterviewFeedback = asyncHandler(async (req, res) => {
 
     const { interviewId } = req.params;
 
-    const feedback =
-        await interviewService.getInterviewFeedback(interviewId);
+    const result =
+        await interviewService.getInterviewFeedback(interviewId, req.user.id);
 
     res.status(200).json({
         success: true,
-        feedback
+        ...result
     });
 
 });

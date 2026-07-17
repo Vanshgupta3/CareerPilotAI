@@ -18,9 +18,16 @@ const liveInterviewRoutes =
 const errorMiddleware = require("./middlewares/errorMiddleware");
 
 const app = express();
+const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
 
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+        return callback(new Error("Origin is not allowed by CORS."));
+    },
     credentials: true
 }));
 
@@ -28,12 +35,13 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
 const path = require("path");
+const uploadDirectory = process.env.UPLOAD_DIR || path.join(__dirname, "uploads");
 const reportRoutes =
     require("./routes/reportRoutes");
 
 app.use(
     "/uploads",
-    express.static(path.join(__dirname, "uploads"))
+    express.static(uploadDirectory)
 );
 
 app.use("/", homeRoutes);

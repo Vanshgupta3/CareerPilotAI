@@ -44,6 +44,7 @@ Instructions:
 - 60% should test general knowledge for the selected role.
 - Questions should progress from easy to difficult.
 - Do not ask duplicate questions.
+- For every question, include an accurate, concise idealAnswer (maximum 150 words) covering the key points a strong candidate should mention.
 - Return ONLY valid JSON.
 
 Example:
@@ -51,10 +52,12 @@ Example:
 {
     "questions": [
         {
-            "question": "Explain Virtual DOM in React."
+            "question": "Explain Virtual DOM in React.",
+            "idealAnswer": "An accurate concise model answer for this question."
         },
         {
-            "question": "What is JWT Authentication?"
+            "question": "What is JWT Authentication?",
+            "idealAnswer": "An accurate concise model answer for this question."
         }
     ]
 }
@@ -90,6 +93,7 @@ Example:
     await prisma.question.createMany({
         data: parsedQuestions.questions.map((item) => ({
             questionText: item.question,
+            idealAnswer: item.idealAnswer || null,
             interviewId: interview.id
         }))
     });
@@ -141,6 +145,9 @@ const generateInterviewFeedback = async (interviewId) => {
 
     for (const question of interview.questions) {
         interviewSummary += `
+Question ID:
+${question.id}
+
 Question:
 ${question.questionText}
 
@@ -174,7 +181,15 @@ Return ONLY valid JSON.
     "strengths": "Mention all strengths. Make it like real interview",
     "weaknesses": "Mention all weaknesses.",
     "suggestions": "Give practical suggestions for improvement.",
-    "summary": "Write a professional summary in 70-100 words."
+    "summary": "Write a professional summary in 70-100 words.",
+    "questionEvaluations": [
+        {
+            "questionId": "Question ID from the transcript",
+            "score": 78,
+            "strengths": "What the candidate answered well for this question.",
+            "improvements": "What was missing, inaccurate, or should be improved."
+        }
+    ]
 }
 
 Rules:
@@ -184,6 +199,8 @@ Rules:
 - Evaluate confidence.
 - Evaluate problem-solving ability.
 - Base the evaluation only on the candidate's answers.
+- Provide one questionEvaluations entry for every answered question. Scores must be 0-100.
+- Keep strengths and improvements concise, specific, and actionable.
 - Return ONLY valid JSON.
 `;
 
@@ -204,6 +221,30 @@ Rules:
         throw new Error("Invalid feedback received from Gemini.");
     }
 
+    const evaluationsByQuestionId = new Map(
+        (Array.isArray(feedback.questionEvaluations) ? feedback.questionEvaluations : [])
+            .filter((evaluation) => evaluation?.questionId)
+            .map((evaluation) => [evaluation.questionId, evaluation])
+    );
+
+    await prisma.$transaction(
+        interview.questions.flatMap((question) => {
+            const answer = question.answers[0];
+            const evaluation = evaluationsByQuestionId.get(question.id);
+            if (!answer || !evaluation) return [];
+
+            const score = Number(evaluation.score);
+            return prisma.answer.update({
+                where: { id: answer.id },
+                data: {
+                    score: Number.isFinite(score) ? Math.min(100, Math.max(0, score)) : 0,
+                    strengths: String(evaluation.strengths || "No specific strengths recorded."),
+                    improvements: String(evaluation.improvements || "No specific improvements recorded.")
+                }
+            });
+        })
+    );
+
     await prisma.feedback.create({
         data: {
             overallScore: feedback.overallScore,
@@ -221,23 +262,44 @@ Rules:
 
     return feedback;
 };
-const getInterviewFeedback = async (interviewId) => {
+const getInterviewFeedback = async (interviewId, userId) => {
 
-    const feedback = await prisma.feedback.findUnique({
-
-        where: {
-            interviewId
+    const interview = await prisma.interview.findFirst({
+        where: { id: interviewId, userId },
+        include: {
+            feedback: true,
+            questions: { include: { answers: true } },
+            reviews: {
+                include: { questionMessage: true },
+                orderBy: { createdAt: "asc" }
+            }
         }
-
     });
 
-    if (!feedback) {
+    if (!interview || !interview.feedback) {
 
         throw new Error("Feedback not found.");
 
     }
 
-    return feedback;
+    const questionReviews = interview.mode === "LIVE"
+        ? interview.reviews.map((review) => ({
+            question: review.questionMessage.content,
+            candidateAnswer: review.candidateAnswer,
+            idealAnswer: review.idealAnswer,
+            explanation: review.explanation,
+            score: review.score
+        }))
+        : interview.questions.map((question) => ({
+            question: question.questionText,
+            candidateAnswer: question.answers[0]?.answerText || "No answer submitted.",
+            idealAnswer: question.idealAnswer || "An ideal answer was not saved for this earlier interview.",
+            score: question.answers[0]?.score ?? null,
+            strengths: question.answers[0]?.strengths,
+            improvements: question.answers[0]?.improvements
+        }));
+
+    return { feedback: interview.feedback, questionReviews };
 
 };
 const getLatestFeedback = async (userId) => {

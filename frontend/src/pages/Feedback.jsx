@@ -4,7 +4,10 @@ import toast from "react-hot-toast";
 
 import Navbar from "../components/Navbar";
 import { useAuth } from "../context/AuthContext";
-import { getInterviewFeedback } from "../services/interviewService";
+import {
+    downloadInterviewReport,
+    getInterviewFeedback
+} from "../services/interviewService";
 
 import {
     CircularProgressbar,
@@ -23,7 +26,12 @@ function Feedback() {
 
     const [feedback, setFeedback] = useState(null);
 
+    const [questionReviews, setQuestionReviews] = useState([]);
+
     const [loading, setLoading] = useState(true);
+
+    const [isDownloadingReport, setIsDownloadingReport] =
+        useState(false);
 
     useEffect(() => {
         fetchFeedback();
@@ -39,6 +47,7 @@ function Feedback() {
             );
 
             setFeedback(result.feedback);
+            setQuestionReviews(result.questionReviews || []);
 
         } catch (error) {
 
@@ -49,6 +58,41 @@ function Feedback() {
         } finally {
 
             setLoading(false);
+
+        }
+
+    };
+
+    const handleDownloadReport = async () => {
+
+        try {
+
+            setIsDownloadingReport(true);
+
+            const report = await downloadInterviewReport(
+                interviewId,
+                token
+            );
+
+            const url = window.URL.createObjectURL(report);
+            const link = document.createElement("a");
+
+            link.href = url;
+            link.download = "CareerPilot_Interview_Report.pdf";
+
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+
+        } catch (error) {
+
+            console.error(error);
+            toast.error("Failed to generate the interview report.");
+
+        } finally {
+
+            setIsDownloadingReport(false);
 
         }
 
@@ -140,6 +184,16 @@ function Feedback() {
                         Dashboard
                     </button>
 
+                    <button
+                        onClick={handleDownloadReport}
+                        disabled={isDownloadingReport}
+                        className="bg-slate-700 hover:bg-slate-600 disabled:cursor-not-allowed disabled:opacity-60 text-white px-5 py-3 rounded-xl"
+                    >
+                        {isDownloadingReport
+                            ? "Generating report..."
+                            : "Download Report"}
+                    </button>
+
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-8 mt-10">
@@ -205,6 +259,36 @@ function Feedback() {
                     </div>
 
                 </div>
+
+                {questionReviews.length > 0 && (
+                    <section className="mt-10">
+                        <h2 className="text-2xl font-semibold text-white">
+                            Questions and Ideal Answers
+                        </h2>
+
+                        <p className="mt-2 text-slate-400">
+                            Compare each response with the key points a strong answer should include.
+                        </p>
+
+                        <div className="mt-6 space-y-6">
+                            {questionReviews.map((review, index) => (
+                                <div key={`${review.question}-${index}`} className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+                                    <div className="flex flex-wrap items-center justify-between gap-3">
+                                        <h3 className="text-lg font-semibold text-white">Question {index + 1}</h3>
+                                        {review.score != null && <span className="rounded-full bg-blue-500/15 px-3 py-1 text-sm font-medium text-blue-300">Score: {review.score}{review.score <= 10 ? "/10" : "%"}</span>}
+                                    </div>
+
+                                    <p className="mt-3 leading-7 text-slate-200">{review.question}</p>
+                                    <AnswerPanel title="Your answer" content={review.candidateAnswer} />
+                                    <AnswerPanel title="Ideal answer" content={review.idealAnswer} accent />
+                                    {review.strengths && <AnswerPanel title="What you did well" content={review.strengths} />}
+                                    {review.improvements && <AnswerPanel title="What to improve" content={review.improvements} />}
+                                    {review.explanation && <AnswerPanel title="AI feedback" content={review.explanation} />}
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                )}
                                 <div className="grid md:grid-cols-2 gap-8 mt-10">
 
                     <InfoCard
@@ -348,6 +432,15 @@ function InfoCard({ title, content }) {
 
     );
 
+}
+
+function AnswerPanel({ title, content, accent = false }) {
+    return (
+        <div className={`mt-5 rounded-xl border p-4 ${accent ? "border-green-500/30 bg-green-500/10" : "border-slate-800 bg-slate-950/50"}`}>
+            <h4 className={`text-sm font-semibold ${accent ? "text-green-300" : "text-slate-300"}`}>{title}</h4>
+            <p className="mt-2 whitespace-pre-line leading-7 text-slate-200">{content}</p>
+        </div>
+    );
 }
 
 export default Feedback;

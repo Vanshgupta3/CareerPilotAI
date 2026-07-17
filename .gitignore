@@ -28,3 +28,6 @@ coverage/
 
 # Temporary files
 *.tmp
+
+# User-uploaded resumes are private runtime data, never source files.
+backend/uploads/

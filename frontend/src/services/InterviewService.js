@@ -1,14 +1,11 @@
-import axios from "axios";
-
-const INTERVIEW_API = "http://localhost:5000/api/interview";
-const ANSWER_API = "http://localhost:5000/api/answer";
+import api from "./api";
 
 // Start Interview
 export const startInterview = async (data, token) => {
 
-    const response = await axios.post(
+    const response = await api.post(
 
-        `${INTERVIEW_API}/start`,
+        "/interview/start",
 
         data,
 
@@ -32,9 +29,9 @@ export const getInterviewQuestions = async (
 
 ) => {
 
-    const response = await axios.get(
+    const response = await api.get(
 
-        `${INTERVIEW_API}/${interviewId}/questions`,
+        `/interview/${encodeURIComponent(interviewId)}/questions`,
 
         {
             headers: {
@@ -56,9 +53,9 @@ export const submitAnswers = async (
 
 ) => {
 
-    const response = await axios.post(
+    const response = await api.post(
 
-        `${ANSWER_API}/submit`,
+        "/answer/submit",
 
         {
             answers
@@ -84,9 +81,9 @@ export const generateInterviewFeedback = async (
 
 ) => {
 
-    const response = await axios.post(
+    const response = await api.post(
 
-        `${INTERVIEW_API}/feedback`,
+        "/interview/feedback",
 
         {
             interviewId
@@ -112,9 +109,9 @@ export const getInterviewFeedback = async (
 
 ) => {
 
-    const response = await axios.get(
+    const response = await api.get(
 
-        `${INTERVIEW_API}/feedback/${interviewId}`,
+        `/interview/feedback/${encodeURIComponent(interviewId)}`,
 
         {
             headers: {
@@ -131,9 +128,9 @@ export const getInterviewFeedback = async (
 // Get Latest Feedback
 export const getLatestFeedback = async (token) => {
 
-    const response = await axios.get(
+    const response = await api.get(
 
-        `${INTERVIEW_API}/latest-feedback`,
+        "/interview/latest-feedback",
 
         {
             headers: {
@@ -148,9 +145,9 @@ export const getLatestFeedback = async (token) => {
 };
 export const getInterviewHistory = async (token) => {
 
-    const response = await axios.get(
+    const response = await api.get(
 
-        `${INTERVIEW_API}/history`,
+        "/interview/history",
 
         {
 
@@ -160,6 +157,25 @@ export const getInterviewHistory = async (token) => {
 
             }
 
+        }
+
+    );
+
+    return response.data;
+
+};
+
+export const downloadInterviewReport = async (interviewId, token) => {
+
+    const response = await api.get(
+
+        `/report/interview/${encodeURIComponent(interviewId)}`,
+
+        {
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+            responseType: "blob"
         }
 
     );

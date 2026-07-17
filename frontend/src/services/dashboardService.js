@@ -1,13 +1,10 @@
-import axios from "axios";
-
-const DASHBOARD_API =
-    "http://localhost:5000/api/dashboard";
+import api from "./api";
 
 export const getDashboardStats = async (token) => {
 
-    const response = await axios.get(
+    const response = await api.get(
 
-        `${DASHBOARD_API}/stats`,
+        "/dashboard/stats",
 
         {
 

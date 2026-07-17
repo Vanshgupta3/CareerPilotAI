@@ -8,6 +8,7 @@ import { useAuth } from "../context/AuthContext";
 
 import { getProfile } from "../services/authService";
 import { startInterview } from "../services/interviewService";
+import { startLiveInterview } from "../services/liveInterviewService";
 
 function InterviewSetup() {
 
@@ -25,6 +26,8 @@ function InterviewSetup() {
     const [type, setType] = useState("Technical");
 
     const [questionCount, setQuestionCount] = useState(10);
+
+    const [mode, setMode] = useState("STANDARD");
 
     const [loading, setLoading] = useState(false);
 
@@ -68,7 +71,7 @@ function InterviewSetup() {
 
         }
 
-        if (questionCount < 2 || questionCount > 30) {
+        if (mode === "STANDARD" && (questionCount < 2 || questionCount > 30)) {
 
             toast.error("Number of questions must be between 2 and 30.");
 
@@ -96,29 +99,25 @@ function InterviewSetup() {
 
         try {
 
-            const result = await startInterview(
+            const data = {
+                resumeId: resume.id,
+                role,
+                level,
+                type
+            };
 
-                {
-
-                    resumeId: resume.id,
-
-                    role,
-
-                    level,
-
-                    type,
-
-                    questionCount
-
-                },
-
-                token
-
-            );
-
-            toast.success("Interview created successfully.");
-
-            navigate(`/interview/${result.interview.interviewId}`);
+            if (mode === "LIVE") {
+                const result = await startLiveInterview(data, token);
+                toast.success("Live interview started.");
+                navigate(`/live-interview/${result.interview.interviewId}`);
+            } else {
+                const result = await startInterview(
+                    { ...data, questionCount },
+                    token
+                );
+                toast.success("Interview created successfully.");
+                navigate(`/interview/${result.interview.interviewId}`);
+            }
 
         } catch (error) {
 
@@ -215,6 +214,29 @@ function InterviewSetup() {
                 ) : (
 
                     <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8">
+
+                        <div className="grid grid-cols-2 gap-3 mb-8 rounded-xl bg-slate-800 p-2">
+                            <button
+                                type="button"
+                                onClick={() => setMode("STANDARD")}
+                                className={`rounded-lg px-4 py-3 text-sm font-semibold transition ${mode === "STANDARD" ? "bg-blue-600 text-white" : "text-slate-300 hover:text-white"}`}
+                            >
+                                Standard interview
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setMode("LIVE")}
+                                className={`rounded-lg px-4 py-3 text-sm font-semibold transition ${mode === "LIVE" ? "bg-blue-600 text-white" : "text-slate-300 hover:text-white"}`}
+                            >
+                                Live adaptive
+                            </button>
+                        </div>
+
+                        {mode === "LIVE" && (
+                            <div className="mb-6 rounded-xl border border-blue-500/30 bg-blue-500/10 p-4 text-sm text-blue-100">
+                                The AI asks one question at a time, adapts to your answer, and completes the interview after 8–12 questions.
+                            </div>
+                        )}
 
                         <div className="grid md:grid-cols-2 gap-6">
 
@@ -324,7 +346,7 @@ function InterviewSetup() {
 
                             </div>
 
-                            <div>
+                            {mode === "STANDARD" && <div>
 
                                 <label className="text-slate-300">
 
@@ -354,7 +376,7 @@ function InterviewSetup() {
 
                                 </p>
 
-                            </div>
+                            </div>}
 
                         </div>
 
@@ -388,7 +410,7 @@ function InterviewSetup() {
 
                                 loading
 
-                                    ? "Generating Questions..."
+                                    ? mode === "LIVE" ? "Starting live interview..." : "Generating questions..."
 
                                     : "🚀 Start Interview"
 

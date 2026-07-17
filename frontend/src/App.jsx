@@ -10,6 +10,7 @@ import InterviewSession from "./pages/InterviewSession";
 import Feedback from "./pages/Feedback";
 import ATSReport from "./pages/ATSReport";
 import InterviewHistory from "./pages/InterviewHistory";
+import LiveInterview from "./pages/LiveInterview";
 
 function App() {
   return (
@@ -49,6 +50,14 @@ function App() {
     element={
         <ProtectedRoute>
             <InterviewSession />
+        </ProtectedRoute>
+    }
+/>
+<Route
+    path="/live-interview/:id"
+    element={
+        <ProtectedRoute>
+            <LiveInterview />
         </ProtectedRoute>
     }
 />

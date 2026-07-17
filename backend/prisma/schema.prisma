@@ -54,17 +54,20 @@ model Interview {
 model Question {
   id           String    @id @default(cuid())
   questionText String
+  idealAnswer  String?
   interviewId  String
   answers      Answer[]
   interview    Interview @relation(fields: [interviewId], references: [id])
 }
 
 model Answer {
-  id         String   @id @default(cuid())
-  answerText String
-  score      Float?
-  questionId String
-  question   Question @relation(fields: [questionId], references: [id])
+  id           String   @id @default(cuid())
+  answerText   String
+  score        Float?
+  strengths    String?
+  improvements String?
+  questionId   String
+  question     Question @relation(fields: [questionId], references: [id])
 }
 
 model InterviewMessage {
