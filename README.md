@@ -112,6 +112,4 @@ Building CareerPilot AI gave me hands-on experience with:
 - Building a complete end-to-end AI workflow connecting frontend, backend, database, and AI services
 - Structuring a backend for maintainability using a routes/middleware/controllers/services pattern
 
-## License
 
-This project is open source and available under the [MIT License](LICENSE).
