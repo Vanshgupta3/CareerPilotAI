@@ -63,11 +63,26 @@ The application uses PostgreSQL with Prisma to model:
 
 ## Screenshots
 
-| Landing Page | Resume ATS Report | Interview Setup | Performance Feedback |
-|---|---|---|---|
-| AI-powered career platform hero section | ATS score + resume metrics breakdown | Configure job role, level, and interview type | Overall score with category breakdown |
+**Landing Page**
+![Landing Page](./screenshots/LandingPage.png)
 
-*(Add screenshot images to a `/screenshots` folder and reference them here, e.g. `![Dashboard](./screenshots/dashboard.png)`)*
+**Sign Up**
+![Sign Up](./screenshots/Signup.png)
+
+**Dashboard**
+![Dashboard](./screenshots/Home.png)
+
+**Resume Analysis**
+![Resume Analysis](./screenshots/ResumeAnalysis.png)
+
+**Resume ATS Report**
+![Resume ATS Report](./screenshots/ResumeReport.png)
+
+**AI Mock Interview Setup**
+![Interview Setup](./screenshots/interview.png)
+
+**Interview Performance Feedback**
+![Interview Performance](./screenshots/InterviewLab.png)
 
 ## Getting Started
 
@@ -111,5 +126,4 @@ Building CareerPilot AI gave me hands-on experience with:
 - Handling and structuring AI-generated outputs reliably
 - Building a complete end-to-end AI workflow connecting frontend, backend, database, and AI services
 - Structuring a backend for maintainability using a routes/middleware/controllers/services pattern
-
 
