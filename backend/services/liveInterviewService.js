@@ -570,7 +570,9 @@ const generateQuestionReviews = async ({
 
     }
 
-    // Return cached reviews if they already exist
+    // Preserve completed reviews and generate only the missing ones. A review
+    // request can fail part-way through a longer interview, so any saved review
+    // must not prevent the remaining questions from being evaluated later.
     const existingReviews = await prisma.questionReview.findMany({
 
         where: {
@@ -587,27 +589,18 @@ const generateQuestionReviews = async ({
 
     });
 
-    if (existingReviews.length > 0) {
+    const existingReviewIds = new Set(
+        existingReviews.map((review) => review.questionMessageId)
+    );
 
-        return existingReviews.map((review) => ({
-
-            questionMessageId: review.questionMessageId,
-
-            question: review.questionMessage.content,
-
-            candidateAnswer: review.candidateAnswer,
-
-            idealAnswer: review.idealAnswer,
-
-            explanation: review.explanation,
-
-            score: review.score
-
-        }));
-
-    }
-
-    const reviews = [];
+    const reviews = existingReviews.map((review) => ({
+        questionMessageId: review.questionMessageId,
+        question: review.questionMessage.content,
+        candidateAnswer: review.candidateAnswer,
+        idealAnswer: review.idealAnswer,
+        explanation: review.explanation,
+        score: review.score
+    }));
 
     for (let i = 0; i < interview.messages.length; i++) {
 
@@ -617,6 +610,10 @@ const generateQuestionReviews = async ({
             message.role !== "AI" ||
             message.messageType !== "QUESTION"
         ) {
+            continue;
+        }
+
+        if (existingReviewIds.has(message.id)) {
             continue;
         }
 
@@ -775,7 +772,12 @@ const generateLiveInterviewFeedback = async ({
         });
 
     if (existingFeedback) {
-        return existingFeedback;
+        const reviews = await generateQuestionReviews({
+            interviewId,
+            userId
+        });
+
+        return { feedback: existingFeedback, reviews };
     }
 
     let transcript = "";
@@ -923,13 +925,10 @@ Rules:
 
     });
 
-return {
-
-    feedback: savedFeedback,
-
-    reviews
-
-};
+    return {
+        feedback: savedFeedback,
+        reviews
+    };
 };
 
 const getQuestionReviews = async ({

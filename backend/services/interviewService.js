@@ -1,5 +1,6 @@
 const prisma = require("../prisma/prismaClient");
 const model = require("./geminiService");
+const { generateQuestionReviews } = require("./liveInterviewService");
 
 const generateQuestions = async ({
     resumeId,
@@ -282,9 +283,13 @@ const getInterviewFeedback = async (interviewId, userId) => {
 
     }
 
+    const liveReviews = interview.mode === "LIVE"
+        ? await generateQuestionReviews({ interviewId, userId })
+        : null;
+
     const questionReviews = interview.mode === "LIVE"
-        ? interview.reviews.map((review) => ({
-            question: review.questionMessage.content,
+        ? liveReviews.map((review) => ({
+            question: review.question,
             candidateAnswer: review.candidateAnswer,
             idealAnswer: review.idealAnswer,
             explanation: review.explanation,
